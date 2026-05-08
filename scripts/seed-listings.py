@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+"""Seed 20 realistic AI app listings into Supabase."""
+
+import json, urllib.request, urllib.error
+
+SUPABASE_URL = "https://qxyauiarkdpsmpwnlnwn.supabase.co"
+SERVICE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4eWF1aWFya2Rwc21wd25sbnduIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzU2NjQxOCwiZXhwIjoyMDkzMTQyNDE4fQ.F1IKqfWBBpWkmWT_n8xI2tAypBZfogosty73fVoZXkI"
+USER_ID      = "67aa4f5a-3a98-4473-b0c5-094d4c56c613"
+
+def bd(p, u, a, po, n):
+    return {"problem_clarity": p, "ux_quality": u, "ai_integration": a, "polish": po, "novelty": n}
+
+LISTINGS = [
+  {
+    "creator_name": "Alex Chen", "creator_initials": "AC",
+    "title": "BugHunter", "url": "bughunter.dev",
+    "description": "AI code reviewer that finds security vulnerabilities before your PR merges. Connects to GitHub in 30 seconds.",
+    "category": "Code", "price_cents": 7900, "price_type": "fixed",
+    "status": "scored", "score": 91, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,9,10,9,8),
+    "critique": "BugHunter is the most focused security tool I've seen submitted. It doesn't try to be a general linter — it specifically hunts SQL injection, XSS, and secrets leakage patterns with an accuracy that feels trained on real CVEs, not toy examples. The GitHub PR comment UX is exactly right: one comment per issue with a fix suggestion. Loses a novelty point because Snyk exists, but BugHunter's AI explanations are genuinely better.",
+    "tags": ["security", "github", "code-review"],
+  },
+  {
+    "creator_name": "Sarah Park", "creator_initials": "SP",
+    "title": "SQLBuddy", "url": "sqlbuddy.app",
+    "description": "Write SQL in plain English. Connects to your database, understands your schema, explains what it's doing.",
+    "category": "Code", "price_cents": 3900, "price_type": "fixed",
+    "status": "scored", "score": 89,  "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(10,9,9,8,8),
+    "critique": "The problem couldn't be sharper: non-technical teammates need data but can't write SQL. SQLBuddy solves this cleanly — schema introspection means it actually understands your table structure rather than hallucinating column names. The explain-in-plain-English feature for complex joins is the killer feature. Drops points only because Metabase and Count have adjacent features, though SQLBuddy's NLP quality is noticeably better.",
+    "tags": ["sql", "data", "analytics"],
+  },
+  {
+    "creator_name": "Marcus Williams", "creator_initials": "MW",
+    "title": "PitchDeck AI", "url": "pitchdeck.ai",
+    "description": "VC pitch deck generator trained on 500+ funded startup decks. Problem, solution, traction — structured and sharp.",
+    "category": "Writing", "price_cents": 8900, "price_type": "fixed",
+    "status": "scored", "score": 83, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,8,8,9,7),
+    "critique": "PitchDeck AI understands pitch structure at a level that generic AI tools don't — it enforces the narrative arc (problem → insight → solution → why now → traction → ask) and flags when sections are weak. The slide-by-slide feedback is actionable. Loses novelty points because Gamma and Beautiful.ai are adjacent, but the VC-specific training data is a real differentiator — outputs feel less like generic decks and more like Series A submissions.",
+    "tags": ["fundraising", "startups", "presentations"],
+  },
+  {
+    "creator_name": "Priya Sharma", "creator_initials": "PS",
+    "title": "DataStory", "url": "datastory.io",
+    "description": "Paste a spreadsheet, get a visual narrative with charts, insights, and a shareable report. No BI tool required.",
+    "category": "Research", "price_cents": 3900, "price_type": "fixed",
+    "status": "scored", "score": 87, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,9,8,9,8),
+    "critique": "DataStory solves the last-mile problem of data analysis: getting from a CSV to something a stakeholder will actually read. The AI identifies the three most interesting patterns in the data and builds the narrative around them — rather than just visualizing everything. The output looks like it was made by a designer. Strongest in its category. Minor gap: pivot table inputs are clunky on large datasets.",
+    "tags": ["data", "reports", "visualization"],
+  },
+  {
+    "creator_name": "James O'Brien", "creator_initials": "JO",
+    "title": "LegalEagle", "url": "legaleagle.so",
+    "description": "AI contract reviewer that flags risky clauses, missing protections, and explains legalese in plain English.",
+    "category": "Other", "price_cents": 9900, "price_type": "fixed",
+    "status": "scored", "score": 85, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(10,8,9,8,7),
+    "critique": "The problem — founders and freelancers signing contracts they don't understand — is painfully real. LegalEagle's clause-by-clause breakdown is accurate enough to be genuinely useful, and the risk-level tagging (red/yellow/green per clause) is immediately actionable. The disclaimer that it's not legal advice is appropriately placed without being annoying. Drops novelty points because Harvey.ai and others operate in this space, but LegalEagle's pricing and UX are much more accessible.",
+    "tags": ["legal", "contracts", "freelance"],
+  },
+  {
+    "creator_name": "Fatima Al-Hassan", "creator_initials": "FA",
+    "title": "TypeAI", "url": "typeai.co",
+    "description": "AI writing assistant that learns your voice from 30 days of emails and Slack. Drafts feel like you wrote them.",
+    "category": "Productivity", "price_cents": 2900, "price_type": "fixed",
+    "status": "scored", "score": 82, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,8,9,8,7),
+    "critique": "TypeAI's persona training is the product — and it works. After 30 days, the drafts genuinely capture writing style, not just vocabulary. The Slack and email integration is seamless. The problem (communication overhead) is universal. Loses points because the privacy story around training on your private messages needs to be more explicit in the UI — it's buried in settings. Otherwise this is top-tier execution.",
+    "tags": ["writing", "email", "productivity"],
+  },
+  {
+    "creator_name": "Ravi Patel", "creator_initials": "RP",
+    "title": "APIDoc", "url": "apidoc.dev",
+    "description": "Auto-generate beautiful, interactive API documentation from your codebase. Syncs on every push.",
+    "category": "Code", "price_cents": None, "price_type": "free",
+    "status": "scored", "score": 78, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(8,8,8,8,7),
+    "critique": "APIDoc fills a genuine gap — most teams write API docs late, grudgingly, and let them go stale. The GitHub sync means docs stay current with zero discipline required. The output quality is solid: parameter tables, example requests, response schemas. Loses points on novelty (Mintlify, Readme.io exist) and AI integration (it's mostly parsing, not deeply AI-driven). But it's free and the UX is significantly better than competitors at this price point.",
+    "tags": ["api", "documentation", "developer-tools"],
+  },
+  {
+    "creator_name": "Lena Mueller", "creator_initials": "LM",
+    "title": "Sketchify", "url": "sketchify.design",
+    "description": "Take a photo of your hand-drawn wireframe. Get a polished, production-ready UI mockup in seconds.",
+    "category": "Design", "price_cents": 4900, "price_type": "fixed",
+    "status": "scored", "score": 76, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(8,8,8,7,8),
+    "critique": "Sketchify's core loop is fast and surprisingly accurate — the model correctly interprets rough boxes as buttons, scribbles as text, and maintains layout proportions. The \"what component library should this look like\" selector is smart. Drops points on polish (the export options are limited — Figma only, no code output) and UX (the camera capture flow is awkward on desktop). The AI interpretation is the strong suit; the surrounding product needs work.",
+    "tags": ["wireframes", "design", "prototyping"],
+  },
+  {
+    "creator_name": "Tom Rodriguez", "creator_initials": "TR",
+    "title": "CopyGenius", "url": "copygenius.ai",
+    "description": "Ad copy that converts. Upload your product, brand voice, and audience — get 50 variants ranked by predicted CTR.",
+    "category": "Writing", "price_cents": 4900, "price_type": "fixed",
+    "status": "scored", "score": 74, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(8,7,7,8,7),
+    "critique": "CopyGenius understands that copywriting is a numbers game — volume plus ranking is the right product mechanic. The CTR prediction model isn't explained well (is it trained on real ad performance data? unclear) but the copy quality is genuinely strong. The brand voice training from uploaded examples works better than expected. Drops points because Jasper and Copy.ai have significant mindshare here, and differentiation beyond \"more variants\" isn't clear.",
+    "tags": ["copywriting", "ads", "marketing"],
+  },
+  {
+    "creator_name": "Yuki Tanaka", "creator_initials": "YT",
+    "title": "ResearchRabbit", "url": "researchrabbit.ai",
+    "description": "Follow citation trails automatically. Discover papers you didn't know to search for, visualized as a knowledge graph.",
+    "category": "Research", "price_cents": None, "price_type": "free",
+    "status": "scored", "score": 79, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,8,8,7,8),
+    "critique": "ResearchRabbit solves a real research workflow problem: you find one good paper but miss the ten papers that cite it or were cited by it. The citation graph visualization is intuitive and genuinely useful for understanding a field's evolution. Free tier is generous. Drops polish points because the graph gets visually overwhelming past 50 nodes with no good clustering controls. The AI summarization of paper abstracts is accurate but surface-level.",
+    "tags": ["research", "papers", "academia"],
+  },
+  {
+    "creator_name": "Diana Foster", "creator_initials": "DF",
+    "title": "FlowDiagram", "url": "flowdiagram.app",
+    "description": "Describe your system in plain English. Get a production-ready architecture diagram you can edit in Figma or Miro.",
+    "category": "Code", "price_cents": 2900, "price_type": "fixed",
+    "status": "scored", "score": 72, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(8,7,7,7,8),
+    "critique": "FlowDiagram's core value prop is solid: architecture docs are painful to create and go stale fast. The NLP parsing understands microservice relationships, databases, and queues reasonably well. The Figma export is clean. Drops points on AI integration depth — complex distributed systems produce mediocre diagrams that need significant manual correction. Also loses points because Mermaid + ChatGPT achieves similar results for free.",
+    "tags": ["architecture", "diagrams", "developer-tools"],
+  },
+  {
+    "creator_name": "Carlos Mendez", "creator_initials": "CM",
+    "title": "PodcastAI", "url": "podcastai.fm",
+    "description": "Automatic transcripts, episode summaries, shareable clips, and chapter markers. Publish faster, reach further.",
+    "category": "Productivity", "price_cents": None, "price_type": "free",
+    "status": "scored", "score": 71, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(8,7,7,7,6),
+    "critique": "PodcastAI bundles four tools (transcription, summarization, clipping, chapters) that podcasters currently pay for separately. The transcription accuracy is on par with Whisper — strong. Chapter detection is the standout AI feature: it genuinely identifies topic shifts rather than just splitting on silence. Loses novelty points because Descript and Riverside exist. The free tier is surprisingly generous but the clip editor UI feels unfinished.",
+    "tags": ["podcast", "audio", "content"],
+  },
+  {
+    "creator_name": "Mei Lin", "creator_initials": "ML",
+    "title": "BrandMind", "url": "brandmind.co",
+    "description": "Generate a complete brand identity from a one-paragraph brief. Logo concepts, color palette, typography, tone of voice.",
+    "category": "Design", "price_cents": 6900, "price_type": "fixed",
+    "status": "scored", "score": 55, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(7,6,5,5,5),
+    "critique": "BrandMind's ambition is right but the execution is V0.5. The color palette and typography outputs are sensible — not generic. The logo concepts are where it falls apart: they look like stock icons with text overlaid, not distinctive brand marks. The tone of voice generator produces Marketing 101 copy that sounds like everyone else. Needs significantly stronger AI integration on the visual identity side before this is a product designers would recommend to clients.",
+    "tags": ["branding", "design", "identity"],
+  },
+  {
+    "creator_name": "Noah Andersson", "creator_initials": "NA",
+    "title": "TweetCraft", "url": "tweetcraft.io",
+    "description": "Write and schedule viral Twitter/X threads. Trained on threads with 10k+ engagements. Hook generator included.",
+    "category": "Writing", "price_cents": 1500, "price_type": "fixed",
+    "status": "scored", "score": 62, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(7,6,6,6,6),
+    "critique": "TweetCraft knows its audience — builders who understand that distribution matters. The hook generator is the best feature, producing genuinely punchy openers. The \"trained on 10k+ engagement threads\" claim is hard to verify but the output quality supports it. Loses points because the product is narrow (Twitter/X only), the AI feels like prompt engineering over GPT-4 without proprietary training, and Hypefury exists with a larger feature set. Solid V1 for the price.",
+    "tags": ["twitter", "social-media", "content"],
+  },
+  {
+    "creator_name": "Aisha Johnson", "creator_initials": "AJ",
+    "title": "ResumeForge", "url": "resumeforge.io",
+    "description": "AI resume tailored to each job description. ATS-optimized, keyword-matched, one-click apply.",
+    "category": "Other", "price_cents": 1900, "price_type": "fixed",
+    "status": "scored", "score": 58, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(7,6,6,5,5),
+    "critique": "Resume tailoring is a real and painful problem. ResumeForge's job-description analysis is accurate — it correctly identifies required skills and adjusts emphasis. The ATS optimization is table stakes but works. Where it falls short: the AI rewrites sound generic and lose the candidate's authentic voice. The \"one-click apply\" Chrome extension is brittle on non-standard job portals. Novelty is low (Teal, Kickresume, and dozens of others). Needs a stronger differentiation angle.",
+    "tags": ["resume", "jobs", "career"],
+  },
+  {
+    "creator_name": "Erik Larsson", "creator_initials": "EL",
+    "title": "MeetingMind", "url": "meetingmind.app",
+    "description": "Joins your Zoom or Meet, takes real-time notes, surfaces action items, and sends a summary before you leave the call.",
+    "category": "Productivity", "price_cents": 2900, "price_type": "fixed",
+    "status": "pending", "score": None, "score_version": 0,
+    "screenshot_status": "pending",
+    "score_breakdown_json": None,
+    "critique": None,
+    "tags": ["meetings", "productivity", "notes"],
+  },
+  {
+    "creator_name": "Sophie Wright", "creator_initials": "SW",
+    "title": "SoundScript", "url": "soundscript.ai",
+    "description": "AI audio transcription with automatic speaker detection, filler word removal, and searchable transcript library.",
+    "category": "Productivity", "price_cents": 2500, "price_type": "fixed",
+    "status": "pending", "score": None, "score_version": 0,
+    "screenshot_status": "pending",
+    "score_breakdown_json": None,
+    "critique": None,
+    "tags": ["transcription", "audio", "productivity"],
+  },
+  {
+    "creator_name": "Omar Hassan", "creator_initials": "OH",
+    "title": "VoiceClone", "url": "voiceclone.studio",
+    "description": "Clone any voice from 30 seconds of audio. Create podcast intros, narration, and voiceovers that sound like you.",
+    "category": "Other", "price_cents": None, "price_type": "offer",
+    "status": "scored", "score": 48, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(6,5,6,5,5),
+    "critique": "Voice cloning technology is real and impressive — the output quality from 30 seconds of audio is genuinely usable. The problem is the product wraps a commodity API (ElevenLabs or similar) without meaningful differentiation. UX is serviceable but not polished. The \"make offer\" pricing suggests the creator isn't sure of the value proposition, which shows. Biggest issue: the consent and ethics story is completely absent from the product. For a voice cloning tool, that's a significant red flag.",
+    "tags": ["voice", "audio", "ai-generated"],
+  },
+  {
+    "creator_name": "Nina Kovač", "creator_initials": "NK",
+    "title": "StyleGPT", "url": "stylegpt.app",
+    "description": "Upload photos of your wardrobe. Get outfit recommendations for any occasion, weather, and dress code.",
+    "category": "Design", "price_cents": None, "price_type": "offer",
+    "status": "scored", "score": 44, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(6,5,5,4,5),
+    "critique": "StyleGPT applies AI to a genuinely relatable problem — most people own clothes they don't know how to combine. The wardrobe photo ingestion works better than expected. Where it breaks down: the outfit recommendations are generic and don't account for body type, fit preferences, or personal style evolution. The \"for any occasion\" promise collapses when you give it edge cases (creative black tie, business casual in a Tokyo summer). Needs more specificity in the recommendation model to feel like a personal stylist vs a fashion chatbot.",
+    "tags": ["fashion", "style", "personal"],
+  },
+  {
+    "creator_name": "Ben Okafor", "creator_initials": "BO",
+    "title": "GrantWriter", "url": "grantwriter.ai",
+    "description": "AI grant proposal writer for nonprofits and researchers. Searches open grants, matches eligibility, drafts applications.",
+    "category": "Writing", "price_cents": 4900, "price_type": "fixed",
+    "status": "scored", "score": 80, "score_version": 1,
+    "screenshot_status": "pending",
+    "score_breakdown_json": bd(9,8,8,8,8),
+    "critique": "GrantWriter targets an underserved market with a clear workflow problem: grant writing is time-consuming, template-heavy, and deadline-driven — perfect for AI. The grant database search and eligibility matching is the killer feature; it surfaces opportunities the applicant wouldn't have found manually. The draft quality requires human editing but provides a strong starting point. High novelty because this vertical is largely untouched by mainstream AI tools. Biggest risk: accuracy of eligibility criteria — a wrong match wastes significant time.",
+    "tags": ["grants", "nonprofit", "writing"],
+  },
+]
+
+rows = []
+for l in LISTINGS:
+    row = {
+        "user_id":            USER_ID,
+        "creator_name":       l["creator_name"],
+        "creator_initials":   l["creator_initials"],
+        "title":              l["title"],
+        "url":                l["url"],
+        "description":        l["description"],
+        "category":           l["category"],
+        "price_cents":        l.get("price_cents"),
+        "price_type":         l["price_type"],
+        "status":             l["status"],
+        "score":              l.get("score"),
+        "score_version":      l.get("score_version", 0),
+        "screenshot_status":  l.get("screenshot_status", "pending"),
+        "score_breakdown_json": l.get("score_breakdown_json"),
+        "critique":           l.get("critique"),
+        "tags":               l.get("tags", []),
+        "last_rescored_at":   "2026-04-30T10:00:00Z" if l.get("score") is not None else None,
+    }
+    rows.append(row)
+
+payload = json.dumps(rows).encode()
+req = urllib.request.Request(
+    f"{SUPABASE_URL}/rest/v1/listings",
+    data=payload,
+    headers={
+        "apikey": SERVICE_KEY,
+        "Authorization": f"Bearer {SERVICE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    },
+    method="POST",
+)
+
+try:
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read())
+        print(f"✓ Inserted {len(data)} listings")
+        for item in data:
+            print(f"  {item['score'] or 'pending':>8}  {item['title']}")
+except urllib.error.HTTPError as e:
+    body = e.read().decode()
+    print(f"✗ HTTP {e.code}: {body[:500]}")

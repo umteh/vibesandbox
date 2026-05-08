@@ -1,0 +1,68 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: oklch(0.96 0.022 82);
+  --bg2: oklch(0.93 0.025 82);
+  --bg3: oklch(0.90 0.028 82);
+  --border: oklch(0.80 0.02 82);
+  --border2: oklch(0.70 0.025 82);
+  --text: oklch(0.13 0.01 260);
+  --text2: oklch(0.35 0.01 260);
+  --text3: oklch(0.55 0.008 260);
+  --blue: oklch(0.47 0.16 257.03);
+  --blue-light: oklch(0.94 0.04 257.03);
+  --accent: oklch(0.88 0.19 128);
+  --accent-dark: oklch(0.70 0.19 128);
+  --amber: oklch(0.72 0.16 62);
+  --amber-light: oklch(0.96 0.04 62);
+  --green: oklch(0.55 0.16 145);
+  --green-light: oklch(0.92 0.07 145);
+  --red: oklch(0.52 0.19 22);
+  --red-light: oklch(0.95 0.04 22);
+  --yellow: oklch(0.76 0.15 90);
+  --yellow-light: oklch(0.97 0.04 90);
+  --ink: oklch(0.13 0.01 260);
+  --shadow-sm: 2px 2px 0px oklch(0.13 0.01 260 / 0.12);
+  --shadow-md: 3px 3px 0px oklch(0.13 0.01 260 / 0.15);
+  --shadow-lg: 4px 4px 0px oklch(0.13 0.01 260 / 0.18);
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-lg: 8px;
+}
+
+html {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body { min-height: 100vh; }
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, textarea, select { font-family: inherit; }
+::placeholder { color: oklch(0.72 0.005 260); opacity: 1; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0.1 0.01 260 / 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes spin { to { transform: rotate(360deg) } }
+@keyframes pulse { 0%, 100% { opacity: 0.6 } 50% { opacity: 1 } }
+
+.animate-slide-up { animation: slideUp 0.2s ease; }
+.animate-spin { animation: spin 0.8s linear infinite; }
+.animate-pulse-dot { animation: pulse 1.4s ease infinite; }

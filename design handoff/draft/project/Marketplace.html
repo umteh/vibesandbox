@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VibeSandbox — AI App Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: oklch(0.985 0.004 80);
+    --bg2: oklch(0.975 0.006 80);
+    --bg3: oklch(0.96 0.008 80);
+    --border: oklch(0.88 0.008 80);
+    --border2: oklch(0.82 0.01 80);
+    --text: oklch(0.16 0.012 260);
+    --text2: oklch(0.42 0.01 260);
+    --text3: oklch(0.62 0.008 260);
+    --blue: oklch(0.54 0.19 252);
+    --blue-light: oklch(0.94 0.04 252);
+    --amber: oklch(0.72 0.16 62);
+    --amber-light: oklch(0.96 0.04 62);
+    --green: oklch(0.62 0.16 152);
+    --green-light: oklch(0.94 0.05 152);
+    --red: oklch(0.58 0.19 22);
+    --red-light: oklch(0.95 0.04 22);
+    --yellow: oklch(0.76 0.15 90);
+    --yellow-light: oklch(0.97 0.04 90);
+    --shadow-sm: 0 1px 3px oklch(0.16 0.012 260 / 0.08), 0 1px 2px oklch(0.16 0.012 260 / 0.04);
+    --shadow-md: 0 4px 12px oklch(0.16 0.012 260 / 0.1), 0 2px 4px oklch(0.16 0.012 260 / 0.06);
+    --shadow-lg: 0 16px 40px oklch(0.16 0.012 260 / 0.14), 0 4px 8px oklch(0.16 0.012 260 / 0.08);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 16px;
+  }
+  html { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+  body { min-height: 100vh; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* Overlay */
+  .overlay {
+    position: fixed; inset: 0; background: oklch(0.1 0.01 260 / 0.5);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+    backdrop-filter: blur(4px); animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  @keyframes pulse { 0%,100% { opacity:0.6 } 50% { opacity:1 } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "blue",
+  "cardLayout": "grid",
+  "showScoreBreakdown": true,
+  "defaultSort": "price"
+}/*EDITMODE-END*/;
+
+// ─── Data ───────────────────────────────────────────────────────────────────
+const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Other'];
+
+const LISTINGS = [
+  {
+    id: 1, title: 'ReplyZen', url: 'replyzen.app',
+    tagline: 'AI that drafts replies to your emails in your own voice, trained on 30 days of your history.',
+    category: 'Productivity', price: 49, priceType: 'fixed',
+    creator: 'Marcus T.', avatar: 'MT',
+    status: 'scored', score: 84,
+    breakdown: { problem_clarity: 9, ux_quality: 8, ai_integration: 9, polish: 8, novelty: 7 },
+    critique: 'ReplyZen nails the persona-matching problem that Gmail Smart Reply fumbles. The onboarding is frictionless — connecting Google takes 30 seconds and the first draft appears before you finish reading the email. AI integration is core: the model genuinely learns your hedging patterns and sign-off style. Loses points on novelty since email-AI is crowded, but execution here is top-tier.',
+    tags: ['email', 'productivity', 'voice'],
+    createdAt: '2d ago',
+  },
+  {
+    id: 2, title: 'Codeclip', url: 'codeclip.dev',
+    tagline: 'Turns any GitHub repo into an interactive explainer. Paste URL, get a walkthrough.',
+    category: 'Code', price: 0, priceType: 'free',
+    creator: 'Priya S.', avatar: 'PS',
+    status: 'scored', score: 76,
+    breakdown: { problem_clarity: 8, ux_quality: 7, ai_integration: 8, polish: 7, novelty: 8 },
+    critique: "The problem is sharp: most codebases are opaque to outsiders and README files are afterthoughts. Codeclip's AI synthesizes entry points and generates a guided walkthrough that respects file structure. UX is clean though the repo size limit (100MB) is hit without a useful error. Novelty is strong — this angle on codebase comprehension hasn't been productized well.",
+    tags: ['github', 'learning', 'open-source'],
+    createdAt: '4d ago',
+  },
+  {
+    id: 3, title: 'Moodboard.ai', url: 'moodboard.ai',
+    tagline: 'Describe your aesthetic in plain English. Get a moodboard in seconds.',
+    category: 'Design', price: null, priceType: 'offer',
+    creator: 'Lena K.', avatar: 'LK',
+    status: 'scored', score: 61,
+    breakdown: { problem_clarity: 6, ux_quality: 7, ai_integration: 6, polish: 6, novelty: 5 },
+    critique: 'Competent execution of an overcrowded idea. The image curation is decent but indistinguishable from a Pinterest search with a GPT wrapper. AI integration doesn\'t feel core — swapping the backend for a keyword search would produce similar results. UX is clean but lacks the "wow" moment that would make this shareable. Needs a stronger differentiator to stand out in the design tools space.',
+    tags: ['design', 'images', 'creative'],
+    createdAt: '1w ago',
+  },
+  {
+    id: 4, title: 'DraftPilot', url: 'draftpilot.so',
+    tagline: 'Long-form writing companion that argues with your ideas to make them better.',
+    category: 'Writing', price: 29, priceType: 'fixed',
+    creator: 'James O.', avatar: 'JO',
+    status: 'scored', score: 91,
+    breakdown: { problem_clarity: 10, ux_quality: 9, ai_integration: 9, polish: 9, novelty: 9 },
+    critique: 'This is the best writing tool I\'ve seen submitted to date. The "argue back" mechanic is genuinely novel — instead of completing your sentences, the AI challenges your premises and asks why. Forces better thinking. The UI is distraction-free and the argument panel is unobtrusive until needed. Problem is crisply stated: writers need resistance, not assistance. Would score higher if the mobile experience weren\'t an afterthought.',
+    tags: ['writing', 'thinking', 'long-form'],
+    createdAt: '3d ago',
+  },
+  {
+    id: 5, title: 'PaperMind', url: 'papermind.xyz',
+    tagline: 'Chat with any academic paper. Understands citations and jumps to source context.',
+    category: 'Research', price: 19, priceType: 'fixed',
+    creator: 'Fatima A.', avatar: 'FA',
+    status: 'scored', score: 73,
+    breakdown: { problem_clarity: 8, ux_quality: 7, ai_integration: 8, polish: 7, novelty: 6 },
+    critique: 'Chat-with-PDF is saturated, but PaperMind earns its differentiation through citation awareness — asking "what does this claim cite?" actually pulls the right passage. Useful for researchers. UX is functional but the PDF upload flow has a confusing intermediate state where nothing happens for 8–12 seconds with no spinner. Polish gap there. Novelty score limited by category crowding.',
+    tags: ['research', 'pdf', 'academic'],
+    createdAt: '5d ago',
+  },
+  {
+    id: 6, title: 'StandupBot', url: 'standup.bot',
+    tagline: 'Pulls from Jira, GitHub, and Linear. Writes your standup so you don\'t have to.',
+    category: 'Productivity', price: 0, priceType: 'free',
+    creator: 'Ravi N.', avatar: 'RN',
+    status: 'pending', score: null,
+    breakdown: null, critique: null,
+    tags: ['standup', 'jira', 'github'],
+    createdAt: '12m ago',
+  },
+  {
+    id: 7, title: 'NameSpark', url: 'namespark.io',
+    tagline: 'AI that names your product. Domain check, trademark scan, vibe score all in one.',
+    category: 'Other', price: 9, priceType: 'fixed',
+    creator: 'Chen W.', avatar: 'CW',
+    status: 'scored', score: 55,
+    breakdown: { problem_clarity: 6, ux_quality: 6, ai_integration: 5, polish: 5, novelty: 5 },
+    critique: 'Addresses a real pain (naming is hard) but the AI suggestions feel generic — mostly portmanteaus and dropped vowels. The domain check is the best feature and works reliably. AI feels like decoration over a wordlist. Trademark scan is surface-level and shouldn\'t be positioned as legal guidance. Solid V1 but needs a meaningful leap in suggestion quality to compete.',
+    tags: ['naming', 'domains', 'branding'],
+    createdAt: '2w ago',
+  },
+  {
+    id: 8, title: 'SlideGeist', url: 'slidegeist.com',
+    tagline: 'Paste a blog post, get a presentation deck. Slides that don\'t look AI-made.',
+    category: 'Design', price: 39, priceType: 'fixed',
+    creator: 'Ola B.', avatar: 'OB',
+    status: 'scored', score: 68,
+    breakdown: { problem_clarity: 7, ux_quality: 7, ai_integration: 7, polish: 7, novelty: 6 },
+    critique: 'Solves a real problem: turning content into slides is tedious and existing tools (Beautiful.ai, Tome) feel overbuilt. SlideGeist\'s layouts are actually tasteful — rare for an AI output. The "doesn\'t look AI-made" claim holds for most outputs. Loses points for limited export options (PDF only, no PowerPoint) and occasional layout breaks on long paragraphs.',
+    tags: ['slides', 'presentations', 'content'],
+    createdAt: '6d ago',
+  },
+];
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function scoreColor(score) {
+  if (score >= 80) return { bg: 'var(--green-light)', text: 'var(--green)', label: 'Excellent' };
+  if (score >= 65) return { bg: 'var(--blue-light)', text: 'var(--blue)', label: 'Good' };
+  if (score >= 50) return { bg: 'var(--yellow-light)', text: 'var(--yellow)', label: 'Fair' };
+  return { bg: 'var(--red-light)', text: 'var(--red)', label: 'Weak' };
+}
+
+function priceDisplay(listing) {
+  if (listing.priceType === 'free') return { label: 'Free', sub: null };
+  if (listing.priceType === 'offer') return { label: 'Make offer', sub: null };
+  return { label: `$${listing.price}`, sub: 'one-time' };
+}
+
+const DIMENSION_LABELS = {
+  problem_clarity: 'Problem', ux_quality: 'UX', ai_integration: 'AI Core', polish: 'Polish', novelty: 'Novelty'
+};
+const DIMENSION_WEIGHTS = {
+  problem_clarity: 25, ux_quality: 25, ai_integration: 20, polish: 15, novelty: 15
+};
+
+// ─── Components ─────────────────────────────────────────────────────────────
+
+function ScoreBadge({ score, size = 'md' }) {
+  if (score === null) return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: size === 'lg' ? '6px 12px' : '4px 10px',
+      borderRadius: 999, background: 'var(--bg3)', border: '1px solid var(--border)',
+      fontSize: size === 'lg' ? 13 : 11, fontWeight: 500, color: 'var(--text3)',
+      fontFamily: "'DM Mono', monospace", letterSpacing: '0.01em',
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--amber)', animation: 'pulse 1.4s ease infinite', display: 'inline-block' }} />
+      Scoring…
+    </span>
+  );
+  const c = scoreColor(score);
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: size === 'lg' ? '6px 14px' : '4px 10px',
+      borderRadius: 999, background: c.bg,
+      fontSize: size === 'lg' ? 15 : 12, fontWeight: 700, color: c.text,
+      fontFamily: "'DM Mono', monospace", letterSpacing: '0.02em',
+    }}>
+      {score}<span style={{ fontSize: size === 'lg' ? 11 : 9, fontWeight: 500, opacity: 0.7 }}>/100</span>
+    </span>
+  );
+}
+
+function DimBar({ label, value, weight }) {
+  const pct = (value / 10) * 100;
+  const c = value >= 8 ? 'var(--green)' : value >= 6 ? 'var(--blue)' : value >= 4 ? 'var(--amber)' : 'var(--red)';
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <span style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 500 }}>{label}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>{weight}%</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: c, fontFamily: "'DM Mono', monospace" }}>{value}/10</span>
+        </div>
+      </div>
+      <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: c, borderRadius: 2, transition: 'width 0.6s cubic-bezier(0.4,0,0.2,1)' }} />
+      </div>
+    </div>
+  );
+}
+
+function AppScreenPlaceholder({ title, category, size = 'md', screenshotUrl = null }) {
+  if (screenshotUrl) {
+    const h = size === 'lg' ? 220 : 140;
+    return (
+      <div style={{ height: h, overflow: 'hidden', borderRadius: size === 'lg' ? '12px 12px 0 0' : 0, flexShrink: 0 }}>
+        <img src={screenshotUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      </div>
+    );
+  }
+  const colors = {
+    Productivity: ['oklch(0.92 0.05 252)', 'oklch(0.78 0.12 252)'],
+    Writing: ['oklch(0.92 0.05 310)', 'oklch(0.78 0.12 310)'],
+    Code: ['oklch(0.15 0.02 260)', 'oklch(0.35 0.08 260)'],
+    Design: ['oklch(0.92 0.05 30)', 'oklch(0.78 0.12 30)'],
+    Research: ['oklch(0.92 0.05 152)', 'oklch(0.78 0.12 152)'],
+    Other: ['oklch(0.92 0.05 80)', 'oklch(0.78 0.12 80)'],
+  };
+  const [bg, accent] = colors[category] || colors.Other;
+  const h = size === 'lg' ? 220 : 140;
+  const isDark = category === 'Code';
+  return (
+    <div style={{
+      height: h, background: bg, borderRadius: size === 'lg' ? '12px 12px 0 0' : 0,
+      display: 'flex', flexDirection: 'column', padding: 12, overflow: 'hidden',
+      position: 'relative', gap: 6,
+    }}>
+      {/* Fake browser chrome */}
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
+        {['oklch(0.7 0.12 22)','oklch(0.7 0.12 80)','oklch(0.6 0.12 152)'].map((c,i) => (
+          <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: c, opacity: 0.6 }} />
+        ))}
+        <div style={{ flex: 1, height: 7, background: isDark ? 'oklch(0.3 0.02 260)' : 'oklch(0.88 0.02 80)', borderRadius: 4, marginLeft: 4 }} />
+      </div>
+      {/* Fake UI blocks */}
+      <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+        <div style={{ width: size === 'lg' ? 80 : 50, background: isDark ? 'oklch(0.2 0.02 260)' : 'oklch(0.1 0.01 260 / 0.06)', borderRadius: 6 }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {[...Array(size === 'lg' ? 5 : 3)].map((_,i) => (
+            <div key={i} style={{ height: 10, background: accent, borderRadius: 3, opacity: 0.3 + i*0.1, width: `${100 - i*12}%` }} />
+          ))}
+          <div style={{ marginTop: 'auto', height: 22, background: accent, borderRadius: 5, width: 80, opacity: 0.7 }} />
+        </div>
+      </div>
+      <div style={{ position: 'absolute', bottom: 8, right: 10, fontSize: 9, color: isDark ? 'oklch(0.6 0.02 260)' : 'oklch(0.5 0.01 260 / 0.5)', fontFamily: "'DM Mono', monospace', letterSpacing:'0.05em" }}>
+        app screenshot
+      </div>
+    </div>
+  );
+}
+
+function Avatar({ initials, size = 24 }) {
+  const colors = { MT:'var(--blue)', PS:'var(--green)', LK:'var(--amber)', JO:'oklch(0.62 0.16 300)', FA:'var(--red)', RN:'oklch(0.55 0.15 180)', CW:'oklch(0.6 0.14 220)', OB:'oklch(0.65 0.15 40)' };
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: colors[initials] || 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <span style={{ fontSize: size * 0.38, fontWeight: 600, color: '#fff', letterSpacing: '-0.01em' }}>{initials}</span>
+    </div>
+  );
+}
+
+function Tag({ children }) {
+  return (
+    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--bg3)', border: '1px solid var(--border)', color: 'var(--text3)', fontWeight: 500 }}>
+      #{children}
+    </span>
+  );
+}
+
+// ─── Listing Card ────────────────────────────────────────────────────────────
+function ListingCard({ listing, onOpen, tweaks }) {
+  const [hovered, setHovered] = React.useState(false);
+  const price = priceDisplay(listing);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => onOpen(listing)}
+      style={{
+        background: '#fff', borderRadius: 'var(--radius-lg)', border: `1px solid ${hovered ? 'var(--border2)' : 'var(--border)'}`,
+        boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+        overflow: 'hidden', cursor: 'pointer',
+        transform: hovered ? 'translateY(-2px)' : 'none',
+        transition: 'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+      }}
+    >
+      <AppScreenPlaceholder title={listing.title} category={listing.category} screenshotUrl={listing.screenshotUrl || null} />
+      <div style={{ padding: 16 }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{listing.title}</div>
+            <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono', monospace" }}>{listing.url}</div>
+          </div>
+          <ScoreBadge score={listing.score} />
+        </div>
+
+        {/* Tagline */}
+        <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          {listing.tagline}
+        </p>
+
+        {/* Breakdown bars (if toggled) */}
+        {tweaks.showScoreBreakdown && listing.breakdown && (
+          <div style={{ marginBottom: 12, display: 'flex', gap: 6 }}>
+            {Object.entries(listing.breakdown).map(([k, v]) => {
+              const pct = (v / 10) * 100;
+              const c = v >= 8 ? 'var(--green)' : v >= 6 ? 'var(--blue)' : v >= 4 ? 'var(--amber)' : 'var(--red)';
+              return (
+                <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }} title={`${DIMENSION_LABELS[k]}: ${v}/10`}>
+                  <div style={{ width: '100%', height: 3, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: c, borderRadius: 2 }} />
+                  </div>
+                  <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, whiteSpace: 'nowrap' }}>{DIMENSION_LABELS[k]}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Avatar initials={listing.avatar} size={22} />
+            <span style={{ fontSize: 12, color: 'var(--text2)' }}>{listing.creator}</span>
+            <span style={{ fontSize: 11, color: 'var(--text3)' }}>· {listing.createdAt}</span>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>{price.label}</div>
+            {price.sub && <div style={{ fontSize: 10, color: 'var(--text3)' }}>{price.sub}</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Contact Modal ────────────────────────────────────────────────────────────
+function ContactModal({ listing, onClose }) {
+  const [form, setForm] = React.useState({ name: '', email: '', message: '' });
+  const [sent, setSent] = React.useState(false);
+  const [sending, setSending] = React.useState(false);
+  const price = priceDisplay(listing);
+
+  function submit(e) {
+    e.preventDefault();
+    setSending(true);
+    setTimeout(() => { setSending(false); setSent(true); }, 1400);
+  }
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: 'var(--radius-lg)', width: 480, maxHeight: '90vh', overflow: 'auto',
+        boxShadow: 'var(--shadow-lg)', animation: 'slideUp 0.2s ease',
+      }}>
+        {sent ? (
+          <div style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Message sent</div>
+            <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6 }}>
+              Your inquiry has been forwarded to {listing.creator}. They'll reply directly to your email. Neither party is tracked after this relay.
+            </p>
+            <button onClick={onClose} style={{ marginTop: 24, padding: '10px 24px', background: 'var(--blue)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>Done</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Avatar initials={listing.avatar} size={32} />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Contact {listing.creator}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>re: {listing.title} · {price.label}</div>
+                </div>
+                <button onClick={onClose} style={{ marginLeft: 'auto', fontSize: 20, color: 'var(--text3)', lineHeight: 1 }}>×</button>
+              </div>
+            </div>
+            <form onSubmit={submit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ padding: '10px 14px', background: 'var(--bg2)', borderRadius: 8, fontSize: 12, color: 'var(--text2)', lineHeight: 1.6, borderLeft: '3px solid var(--border2)' }}>
+                No login required. Your message is relayed once to the seller's email. The link expires in 24h.
+              </div>
+              {[['name','Your name','text',true],['email','Your email','email',true]].map(([id, ph, type, req]) => (
+                <div key={id}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
+                    {ph} {req && <span style={{ color: 'var(--red)' }}>*</span>}
+                  </label>
+                  <input type={type} required={req} placeholder={ph} value={form[id]} onChange={e => setForm(f => ({...f,[id]:e.target.value}))}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }} />
+                </div>
+              ))}
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>Message <span style={{ color: 'var(--red)' }}>*</span></label>
+                <textarea required rows={4} placeholder={`Hi ${listing.creator}, I'm interested in ${listing.title}...`}
+                  value={form.message} onChange={e => setForm(f => ({...f,message:e.target.value}))}
+                  style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', resize: 'vertical', background: 'var(--bg)' }} />
+              </div>
+              <button type="submit" disabled={sending} style={{
+                padding: '11px', background: 'var(--blue)', color: '#fff', borderRadius: 8,
+                fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                opacity: sending ? 0.7 : 1, transition: 'opacity 0.2s',
+              }}>
+                {sending ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Sending…</> : 'Send inquiry →'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Listing Detail Modal ─────────────────────────────────────────────────────
+function DetailModal({ listing, onClose, onContact }) {
+  const price = priceDisplay(listing);
+  const c = listing.score ? scoreColor(listing.score) : null;
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: 'var(--radius-lg)', width: 680, maxHeight: '90vh', overflow: 'auto',
+        boxShadow: 'var(--shadow-lg)', animation: 'slideUp 0.2s ease',
+      }}>
+        <AppScreenPlaceholder title={listing.title} category={listing.category} size="lg" screenshotUrl={listing.screenshotUrl || null} />
+        <div style={{ padding: 28 }}>
+          {/* Top */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 700 }}>{listing.title}</h2>
+                <ScoreBadge score={listing.score} size="lg" />
+              </div>
+              <a href="#" style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontFamily: "'DM Mono', monospace" }}>{listing.url} ↗</a>
+            </div>
+            <button onClick={onClose} style={{ fontSize: 22, color: 'var(--text3)', lineHeight: 1, marginLeft: 16 }}>×</button>
+          </div>
+
+          {/* Meta row */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+            <span style={{ padding: '4px 10px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 12, fontWeight: 500, color: 'var(--text2)' }}>{listing.category}</span>
+            {listing.tags.map(t => <Tag key={t}>{t}</Tag>)}
+            <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text3)' }}>Listed {listing.createdAt}</span>
+          </div>
+
+          <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.65, marginBottom: 24 }}>{listing.tagline}</p>
+
+          {/* Score section */}
+          {listing.score !== null ? (
+            <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{ fontSize: 40, fontWeight: 800, color: c.text, fontFamily: "'DM Mono', monospace", letterSpacing: '-0.03em' }}>{listing.score}</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>{c.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>AI quality score · v1</div>
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                {Object.entries(listing.breakdown).map(([k, v]) => (
+                  <DimBar key={k} label={DIMENSION_LABELS[k]} value={v} weight={DIMENSION_WEIGHTS[k]} />
+                ))}
+              </div>
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>AI Critique</div>
+                <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7 }}>{listing.critique}</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: 'var(--amber-light)', border: '1px solid var(--amber)', borderRadius: 12, padding: 20, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--amber)', animation: 'pulse 1.4s ease infinite', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>Score in progress</div>
+                <div style={{ fontSize: 13, color: 'var(--text2)' }}>Our AI is evaluating this app across 5 dimensions. Usually takes &lt;5 minutes. This listing is visible while scoring runs.</div>
+              </div>
+            </div>
+          )}
+
+          {/* Creator + CTA */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Avatar initials={listing.avatar} size={36} />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{listing.creator}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Seller</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>{price.label}</div>
+                {price.sub && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{price.sub}</div>}
+              </div>
+              <button onClick={() => { onClose(); onContact(listing); }} style={{
+                padding: '11px 22px', background: 'var(--blue)', color: '#fff', borderRadius: 9,
+                fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap',
+              }}>
+                Contact Seller →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Submit Modal ─────────────────────────────────────────────────────────────
+function SubmitModal({ onClose, onSubmitListing }) {
+  const [step, setStep] = React.useState(1);
+  const [form, setForm] = React.useState({ title:'', url:'', description:'', category:'Productivity', price:'', priceType:'fixed' });
+  const [screenshotUrl, setScreenshotUrl] = React.useState(null);
+  const [submitting, setSubmitting] = React.useState(false);
+  const fileRef = React.useRef();
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setScreenshotUrl(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function submit(e) {
+    e.preventDefault();
+    setSubmitting(true);
+    setTimeout(() => {
+      onSubmitListing({ ...form, screenshotUrl });
+      setSubmitting(false);
+      setStep(3);
+    }, 1800);
+  }
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: 'var(--radius-lg)', width: 520, maxHeight: '90vh', overflow: 'auto',
+        boxShadow: 'var(--shadow-lg)', animation: 'slideUp 0.2s ease',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700 }}>Submit your app</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)' }}>AI scores every listing — usually &lt;5 min</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 22, color: 'var(--text3)' }}>×</button>
+        </div>
+
+        {step === 3 ? (
+          <div style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>✓</div>
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Listing submitted!</div>
+            <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 8 }}>
+              Your listing is live with a "Scoring…" badge. Share the link — AI scoring runs in the background.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text3)' }}>Score typically arrives within 5 minutes.</p>
+            <button onClick={onClose} style={{ marginTop: 24, padding: '10px 24px', background: 'var(--blue)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>View listing →</button>
+          </div>
+        ) : (
+          <form onSubmit={submit} style={{ padding: 24 }}>
+            {/* Step pills */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
+              {['App details','Pricing'].map((s,i) => (
+                <div key={i} style={{ padding: '4px 12px', borderRadius: 999, fontSize: 12, fontWeight: 500,
+                  background: step === i+1 ? 'var(--blue)' : 'var(--bg3)',
+                  color: step === i+1 ? '#fff' : 'var(--text3)',
+                  border: `1px solid ${step === i+1 ? 'var(--blue)' : 'var(--border)'}` }}>
+                  {i+1}. {s}
+                </div>
+              ))}
+            </div>
+
+            {step === 1 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[['title','App name','text',true],['url','App URL (e.g. myapp.com)','url',true]].map(([id,ph,type,req]) => (
+                  <div key={id}>
+                    <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:5 }}>{ph}{req&&<span style={{color:'var(--red)'}}> *</span>}</label>
+                    <input type={type} required={req} placeholder={ph} value={form[id]} onChange={e=>setForm(f=>({...f,[id]:e.target.value}))}
+                      style={{ width:'100%', padding:'9px 12px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, outline:'none', background:'var(--bg)' }} />
+                  </div>
+                ))}
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:5 }}>Description <span style={{color:'var(--red)'}}>*</span></label>
+                  <textarea required rows={3} placeholder="One sentence that nails who suffers and why your app solves it." value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))}
+                    style={{ width:'100%', padding:'9px 12px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, outline:'none', resize:'vertical', background:'var(--bg)' }} />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:5 }}>Category <span style={{color:'var(--red)'}}>*</span></label>
+                  <select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}
+                    style={{ width:'100%', padding:'9px 12px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, outline:'none', background:'var(--bg)' }}>
+                    {CATEGORIES.filter(c=>c!=='All').map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+
+                {/* Screenshot upload */}
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:5 }}>
+                    Screenshot <span style={{ color:'var(--text3)', fontWeight:400 }}>(optional — helps the AI score)</span>
+                  </label>
+                  <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleFile} />
+                  {screenshotUrl ? (
+                    <div style={{ position:'relative', borderRadius:8, overflow:'hidden', border:'1px solid var(--border)' }}>
+                      <img src={screenshotUrl} alt="screenshot preview" style={{ width:'100%', height:140, objectFit:'cover', display:'block' }} />
+                      <button type="button" onClick={() => { setScreenshotUrl(null); fileRef.current.value=''; }}
+                        style={{ position:'absolute', top:8, right:8, background:'oklch(0.1 0.01 260 / 0.7)', color:'#fff', border:'none', borderRadius:6, padding:'4px 10px', fontSize:12, fontWeight:500, cursor:'pointer' }}>
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => fileRef.current.click()} style={{
+                      width:'100%', padding:'20px', border:'1.5px dashed var(--border2)', borderRadius:8,
+                      background:'var(--bg)', color:'var(--text3)', fontSize:13, cursor:'pointer',
+                      display:'flex', flexDirection:'column', alignItems:'center', gap:6,
+                      transition:'border-color 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--blue)';e.currentTarget.style.background='var(--blue-light)'}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border2)';e.currentTarget.style.background='var(--bg)'}}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                      <span>Upload screenshot</span>
+                      <span style={{ fontSize:11 }}>PNG, JPG up to 5MB</span>
+                    </button>
+                  )}
+                </div>
+
+                <button type="button" onClick={() => setStep(2)} disabled={!form.title||!form.url||!form.description} style={{
+                  padding:'11px', background:'var(--blue)', color:'#fff', borderRadius:8, fontSize:14, fontWeight:600,
+                  opacity:(!form.title||!form.url||!form.description)?0.4:1,
+                }}>Next →</button>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                <div>
+                  <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:8 }}>Pricing model <span style={{color:'var(--red)'}}>*</span></label>
+                  <div style={{ display:'flex', gap:8 }}>
+                    {[['fixed','Fixed price'],['offer','Make offer'],['free','Free']].map(([v,l]) => (
+                      <button type="button" key={v} onClick={() => setForm(f=>({...f,priceType:v}))} style={{
+                        flex:1, padding:'10px 8px', borderRadius:8, fontSize:13, fontWeight:500,
+                        border:`1.5px solid ${form.priceType===v ? 'var(--blue)' : 'var(--border)'}`,
+                        background: form.priceType===v ? 'var(--blue-light)' : 'var(--bg)',
+                        color: form.priceType===v ? 'var(--blue)' : 'var(--text2)',
+                      }}>{l}</button>
+                    ))}
+                  </div>
+                </div>
+                {form.priceType === 'fixed' && (
+                  <div>
+                    <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:5 }}>Price (USD) <span style={{color:'var(--red)'}}>*</span></label>
+                    <div style={{ position:'relative' }}>
+                      <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text3)', fontSize:14 }}>$</span>
+                      <input type="number" min="1" required placeholder="49" value={form.price} onChange={e=>setForm(f=>({...f,price:e.target.value}))}
+                        style={{ width:'100%', padding:'9px 12px 9px 24px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, outline:'none', background:'var(--bg)' }} />
+                    </div>
+                  </div>
+                )}
+                <div style={{ padding:'12px', background:'var(--bg2)', borderRadius:8, fontSize:12, color:'var(--text2)', lineHeight:1.6, borderLeft:'3px solid var(--border2)' }}>
+                  No payment processing. Buyers contact you directly via encrypted relay. You close deals off-platform.
+                </div>
+                <div style={{ display:'flex', gap:10 }}>
+                  <button type="button" onClick={()=>setStep(1)} style={{ flex:1, padding:'11px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, fontWeight:500, color:'var(--text2)', background:'var(--bg)' }}>← Back</button>
+                  <button type="submit" disabled={submitting} style={{ flex:2, padding:'11px', background:'var(--blue)', color:'#fff', borderRadius:8, fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                    {submitting ? <><div style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />Submitting…</> : 'Submit & score →'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Auth Modal ───────────────────────────────────────────────────────────────
+function AuthModal({ mode, onClose, onToggle, onAuth }) {
+  const [form, setForm] = React.useState({ email:'', password:'' });
+  const [loading, setLoading] = React.useState(false);
+  function submit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => { setLoading(false); onAuth(form.email); }, 1200);
+  }
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        background:'#fff', borderRadius:'var(--radius-lg)', width:420,
+        boxShadow:'var(--shadow-lg)', animation:'slideUp 0.2s ease',
+      }}>
+        <div style={{ padding:'24px 28px' }}>
+          <div style={{ marginBottom:24 }}>
+            <div style={{ fontSize:20, fontWeight:700, marginBottom:4 }}>{mode === 'signin' ? 'Sign in' : 'Create account'}</div>
+            <div style={{ fontSize:13, color:'var(--text3)' }}>{mode === 'signin' ? 'Welcome back to VibeSandbox' : 'Join the AI builder community'}</div>
+          </div>
+          {/* OAuth buttons */}
+          <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:4 }}>
+            {[
+              { label: 'Continue with GitHub', bg: '#0d1117', color: '#fff', border: '#0d1117',
+                icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> },
+              { label: 'Continue with Google', bg: '#fff', color: '#3c4043', border: '#dadce0',
+                icon: <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> },
+            ].map(({ label, bg, color, border, icon }) => (
+              <button key={label} type="button" onClick={() => onAuth(label.includes('GitHub') ? 'github_user' : 'google_user')}
+                style={{ width:'100%', padding:'10px 14px', background:bg, color, border:`1.5px solid ${border}`, borderRadius:8, fontSize:13, fontWeight:500, display:'flex', alignItems:'center', justifyContent:'center', gap:10, cursor:'pointer', transition:'opacity 0.15s' }}
+                onMouseEnter={e=>e.currentTarget.style.opacity='0.85'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                {icon}{label}
+              </button>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <div style={{ display:'flex', alignItems:'center', gap:10, margin:'4px 0' }}>
+            <div style={{ flex:1, height:1, background:'var(--border)' }} />
+            <span style={{ fontSize:12, color:'var(--text3)' }}>or</span>
+            <div style={{ flex:1, height:1, background:'var(--border)' }} />
+          </div>
+
+          <form onSubmit={submit} style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {[['email','Email address','email'],['password','Password','password']].map(([id,ph,type]) => (
+              <div key={id}>
+                <label style={{ display:'block', fontSize:12, fontWeight:500, color:'var(--text2)', marginBottom:4 }}>{ph}</label>
+                <input type={type} required placeholder={ph} value={form[id]} onChange={e=>setForm(f=>({...f,[id]:e.target.value}))}
+                  style={{ width:'100%', padding:'10px 12px', border:'1px solid var(--border)', borderRadius:8, fontSize:14, outline:'none', background:'var(--bg)' }} />
+              </div>
+            ))}
+            <button type="submit" disabled={loading} style={{ marginTop:4, padding:'11px', background:'var(--blue)', color:'#fff', borderRadius:8, fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              {loading ? <><div style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'#fff', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />{mode==='signin'?'Signing in…':'Creating account…'}</> : (mode==='signin' ? 'Sign in' : 'Create account')}
+            </button>
+          </form>
+          <div style={{ marginTop:16, textAlign:'center', fontSize:13, color:'var(--text3)' }}>
+            {mode==='signin' ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={onToggle} style={{ color:'var(--blue)', fontWeight:500 }}>{mode==='signin' ? 'Sign up' : 'Sign in'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ────────────────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+  const [category, setCategory] = React.useState('All');
+  const [sort, setSort] = React.useState(tweaks.defaultSort);
+  const [search, setSearch] = React.useState('');
+  const [detail, setDetail] = React.useState(null);
+  const [contact, setContact] = React.useState(null);
+  const [listings, setListings] = React.useState(LISTINGS);
+  const [submit, setSubmit] = React.useState(false);
+  const [auth, setAuth] = React.useState(null); // 'signin' | 'signup'
+  const [user, setUser] = React.useState(null);
+
+  // Tweaks messaging
+  React.useEffect(() => {
+    function handleMsg(e) {
+      if (e.data?.type === '__activate_edit_mode') setTweaksOpen(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
+    }
+    window.addEventListener('message', handleMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handleMsg);
+  }, []);
+
+  function updateTweak(key, val) {
+    const next = { ...tweaks, [key]: val };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: val } }, '*');
+  }
+
+  function handleSubmitListing(formData) {
+    const newListing = {
+      id: Date.now(),
+      title: formData.title,
+      url: formData.url,
+      tagline: formData.description,
+      category: formData.category,
+      price: formData.priceType === 'fixed' ? parseInt(formData.price) : null,
+      priceType: formData.priceType,
+      creator: user || 'You',
+      avatar: (user || 'YO').slice(0,2).toUpperCase(),
+      status: 'pending',
+      score: null,
+      breakdown: null,
+      critique: null,
+      tags: [],
+      createdAt: 'just now',
+      screenshotUrl: formData.screenshotUrl || null,
+    };
+    setListings(prev => [newListing, ...prev]);
+  }
+  let filtered = listings.filter(l => {
+    if (category !== 'All' && l.category !== category) return false;
+    if (search && !`${l.title} ${l.tagline} ${l.tags.join(' ')}`.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+  if (sort === 'score') filtered = [...filtered].sort((a,b) => (b.score||0)-(a.score||0));
+  if (sort === 'newest') filtered = [...filtered].sort((a,b) => a.createdAt.localeCompare(b.createdAt));
+  if (sort === 'price') filtered = [...filtered].sort((a,b) => (a.price||0)-(b.price||0));
+
+  const scored = listings.filter(l => l.status === 'scored').length;
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+
+      {/* ── NAV ─────────────────────────────────── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: 'oklch(0.985 0.004 80 / 0.92)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', gap: 24 }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', boxShadow: '0 0 0 3px oklch(0.54 0.19 252 / 0.3)' }} />
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em' }}>VibeSandbox</span>
+          </div>
+
+          {/* Search */}
+          <div style={{ flex: 1, maxWidth: 380, position: 'relative' }}>
+            <svg style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', opacity:0.4 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input placeholder="Search apps…" value={search} onChange={e => setSearch(e.target.value)}
+              style={{ width:'100%', padding:'7px 12px 7px 30px', border:'1px solid var(--border)', borderRadius:8, fontSize:13, outline:'none', background:'#fff' }} />
+          </div>
+
+          {/* Nav links */}
+          <div style={{ display:'flex', alignItems:'center', gap:4, marginLeft:'auto' }}>
+            {!user ? (
+              <>
+                <button onClick={() => setAuth('signin')} style={{ padding:'7px 14px', fontSize:13, fontWeight:500, color:'var(--text2)', borderRadius:7 }}>Sign in</button>
+                <button onClick={() => setAuth('signup')} style={{ padding:'7px 14px', fontSize:13, fontWeight:600, color:'var(--blue)', borderRadius:7, border:'1.5px solid var(--blue)', background:'var(--blue-light)' }}>Sign up</button>
+              </>
+            ) : (
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:13, color:'var(--text2)' }}>{user}</span>
+                <button onClick={() => setUser(null)} style={{ fontSize:12, color:'var(--text3)' }}>Sign out</button>
+              </div>
+            )}
+            <button onClick={() => user ? setSubmit(true) : setAuth('signup')} style={{
+              marginLeft:8, padding:'7px 16px', background:'var(--blue)', color:'#fff',
+              borderRadius:8, fontSize:13, fontWeight:600, display:'flex', alignItems:'center', gap:5,
+            }}>
+              <span style={{ fontSize:16, lineHeight:1 }}>+</span> Submit app
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── HERO ─────────────────────────────────── */}
+      <div style={{ background: '#fff', borderBottom: '1px solid var(--border)', padding: '40px 24px 36px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ maxWidth: 580 }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'4px 12px', borderRadius:999, background:'var(--blue-light)', border:'1px solid var(--blue)', marginBottom:16 }}>
+              <div style={{ width:6, height:6, borderRadius:'50%', background:'var(--blue)' }} />
+              <span style={{ fontSize:12, fontWeight:600, color:'var(--blue)' }}>{scored} apps scored by AI</span>
+            </div>
+            <h1 style={{ fontSize:36, fontWeight:800, letterSpacing:'-0.03em', lineHeight:1.15, marginBottom:12 }}>
+              The marketplace for<br />AI-powered apps
+            </h1>
+            <p style={{ fontSize:16, color:'var(--text2)', lineHeight:1.6, marginBottom:0 }}>
+              Every listing is scored by AI across 5 dimensions — problem clarity, UX, AI integration, polish, and novelty. Builders sell. Buyers discover. No payment processing.
+            </p>
+          </div>
+
+          {/* Stats row */}
+          <div style={{ display:'flex', gap:32, marginTop:28 }}>
+            {[['8','listings'],[`${scored}`,'scored'],['3','categories']].map(([n,l]) => (
+              <div key={l}>
+                <div style={{ fontSize:24, fontWeight:800, fontFamily:"'DM Mono', monospace", letterSpacing:'-0.02em' }}>{n}</div>
+                <div style={{ fontSize:12, color:'var(--text3)' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── FILTERS ──────────────────────────────── */}
+      <div style={{ borderBottom: '1px solid var(--border)', background: '#fff', position: 'sticky', top: 56, zIndex: 40 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', gap: 8, height: 48, overflowX: 'auto' }}>
+          {CATEGORIES.map(c => (
+            <button key={c} onClick={() => setCategory(c)} style={{
+              padding:'5px 14px', borderRadius:999, fontSize:13, fontWeight:500, whiteSpace:'nowrap',
+              border: `1.5px solid ${category===c ? 'var(--blue)' : 'var(--border)'}`,
+              background: category===c ? 'var(--blue)' : 'transparent',
+              color: category===c ? '#fff' : 'var(--text2)',
+              transition: 'all 0.15s',
+            }}>{c}</button>
+          ))}
+          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+            <span style={{ fontSize:12, color:'var(--text3)' }}>Sort:</span>
+            {[['score','AI Score'],['newest','Newest'],['price','Price']].map(([v,l]) => (
+              <button key={v} onClick={() => setSort(v)} style={{
+                padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500,
+                background: sort===v ? 'var(--bg3)' : 'transparent',
+                color: sort===v ? 'var(--text)' : 'var(--text3)',
+                border: sort===v ? '1px solid var(--border2)' : '1px solid transparent',
+              }}>{l}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── FEED ─────────────────────────────────── */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 64px' }}>
+        {/* Results header */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+          <div style={{ fontSize:13, color:'var(--text3)' }}>
+            <span style={{ fontWeight:600, color:'var(--text)' }}>{filtered.length}</span> listings{category!=='All'&&` in ${category}`}{search&&` matching "${search}"`}
+          </div>
+          {search && <button onClick={() => setSearch('')} style={{ fontSize:12, color:'var(--blue)' }}>Clear search</button>}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'80px 0', color:'var(--text3)' }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>🔍</div>
+            <div style={{ fontSize:16, fontWeight:500, marginBottom:6 }}>No listings found</div>
+            <div style={{ fontSize:14 }}>Try a different category or search term</div>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: tweaks.cardLayout === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : '1fr',
+            gap: 20,
+          }}>
+            {filtered.map(l => <ListingCard key={l.id} listing={l} onOpen={setDetail} tweaks={tweaks} />)}
+          </div>
+        )}
+      </div>
+
+      {/* ── FOOTER ───────────────────────────────── */}
+      <footer style={{ borderTop:'1px solid var(--border)', background:'#fff', padding:'24px', textAlign:'center' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontSize:13, fontWeight:700 }}>VibeSandbox</span>
+          <span style={{ fontSize:12, color:'var(--text3)' }}>AI curation · Craigslist model · No payment processing</span>
+          <div style={{ display:'flex', gap:16 }}>
+            {['About','Submit','API'].map(l => <a key={l} href="#" style={{ fontSize:12, color:'var(--text3)', textDecoration:'none' }}>{l}</a>)}
+          </div>
+        </div>
+      </footer>
+
+      {/* ── MODALS ───────────────────────────────── */}
+      {detail && <DetailModal listing={detail} onClose={() => setDetail(null)} onContact={l => setContact(l)} />}
+      {contact && <ContactModal listing={contact} onClose={() => setContact(null)} />}
+      {submit && <SubmitModal onClose={() => setSubmit(false)} onSubmitListing={handleSubmitListing} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onToggle={() => setAuth(a => a==='signin'?'signup':'signin')} onAuth={id => { setUser(id === 'github_user' ? 'github_user' : id === 'google_user' ? 'google_user' : id.split('@')[0]); setAuth(null); }} />}
+
+      {/* ── TWEAKS ───────────────────────────────── */}
+      {tweaksOpen && (
+        <div style={{
+          position:'fixed', bottom:24, right:24, width:260, background:'#fff',
+          borderRadius:'var(--radius-lg)', border:'1px solid var(--border)', boxShadow:'var(--shadow-lg)',
+          padding:20, zIndex:200, animation:'slideUp 0.2s ease',
+        }}>
+          <div style={{ fontSize:13, fontWeight:700, marginBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            Tweaks
+            <button onClick={() => setTweaksOpen(false)} style={{ fontSize:16, color:'var(--text3)' }}>×</button>
+          </div>
+
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--text3)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.06em' }}>Card layout</div>
+              <div style={{ display:'flex', gap:6 }}>
+                {[['grid','Grid'],['list','List']].map(([v,l]) => (
+                  <button key={v} onClick={() => updateTweak('cardLayout', v)} style={{
+                    flex:1, padding:'7px', borderRadius:7, fontSize:12, fontWeight:500,
+                    border:`1.5px solid ${tweaks.cardLayout===v?'var(--blue)':'var(--border)'}`,
+                    background:tweaks.cardLayout===v?'var(--blue-light)':'var(--bg)',
+                    color:tweaks.cardLayout===v?'var(--blue)':'var(--text2)',
+                  }}>{l}</button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--text3)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.06em' }}>Show score breakdown</div>
+              <button onClick={() => updateTweak('showScoreBreakdown', !tweaks.showScoreBreakdown)} style={{
+                width:'100%', padding:'7px', borderRadius:7, fontSize:12, fontWeight:500,
+                border:`1.5px solid ${tweaks.showScoreBreakdown?'var(--blue)':'var(--border)'}`,
+                background:tweaks.showScoreBreakdown?'var(--blue-light)':'var(--bg)',
+                color:tweaks.showScoreBreakdown?'var(--blue)':'var(--text2)',
+              }}>{tweaks.showScoreBreakdown ? 'On — showing dimensions' : 'Off — score badge only'}</button>
+            </div>
+
+            <div>
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--text3)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.06em' }}>Default sort</div>
+              <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+                {[['score','Score'],['newest','New'],['price','Price']].map(([v,l]) => (
+                  <button key={v} onClick={() => { updateTweak('defaultSort', v); setSort(v); }} style={{
+                    flex:1, padding:'6px 4px', borderRadius:6, fontSize:11, fontWeight:500,
+                    border:`1.5px solid ${tweaks.defaultSort===v?'var(--blue)':'var(--border)'}`,
+                    background:tweaks.defaultSort===v?'var(--blue-light)':'var(--bg)',
+                    color:tweaks.defaultSort===v?'var(--blue)':'var(--text2)',
+                  }}>{l}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="112" fill="oklch(0.985 0.004 80)"/>
+  <rect x="8" y="8" width="144" height="20" rx="4" fill="white" stroke="oklch(0.88 0.008 80)" stroke-width="0.5"/>
+  <circle cx="20" cy="18" r="6" fill="oklch(0.54 0.19 252)"/>
+  <rect x="34" y="14" width="40" height="8" rx="3" fill="oklch(0.88 0.008 80)"/>
+  <rect x="110" y="13" width="22" height="10" rx="3" fill="oklch(0.54 0.19 252)"/>
+  <rect x="8" y="34" width="46" height="70" rx="6" fill="white" stroke="oklch(0.88 0.008 80)" stroke-width="0.5"/>
+  <rect x="8" y="34" width="46" height="20" rx="6" fill="oklch(0.92 0.05 252)"/>
+  <rect x="14" y="59" width="34" height="6" rx="2" fill="oklch(0.16 0.012 260)" opacity="0.8"/>
+  <rect x="14" y="69" width="28" height="4" rx="1.5" fill="oklch(0.42 0.01 260)" opacity="0.5"/>
+  <rect x="14" y="78" width="22" height="8" rx="3" fill="oklch(0.94 0.04 152)"/>
+  <rect x="59" y="34" width="46" height="70" rx="6" fill="white" stroke="oklch(0.88 0.008 80)" stroke-width="0.5"/>
+  <rect x="59" y="34" width="46" height="20" rx="6" fill="oklch(0.15 0.02 260)"/>
+  <rect x="65" y="59" width="34" height="6" rx="2" fill="oklch(0.16 0.012 260)" opacity="0.8"/>
+  <rect x="65" y="69" width="28" height="4" rx="1.5" fill="oklch(0.42 0.01 260)" opacity="0.5"/>
+  <rect x="65" y="78" width="22" height="8" rx="3" fill="oklch(0.94 0.04 252)"/>
+  <rect x="110" y="34" width="42" height="70" rx="6" fill="white" stroke="oklch(0.88 0.008 80)" stroke-width="0.5"/>
+  <rect x="110" y="34" width="42" height="20" rx="6" fill="oklch(0.92 0.05 30)"/>
+  <rect x="116" y="59" width="30" height="6" rx="2" fill="oklch(0.16 0.012 260)" opacity="0.8"/>
+  <rect x="116" y="78" width="20" height="8" rx="3" fill="oklch(0.94 0.05 152)"/>
+</svg>
+</template>
+</body>
+</html>
