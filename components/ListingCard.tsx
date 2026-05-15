@@ -10,12 +10,14 @@ import AppScreenPlaceholder from './AppScreenPlaceholder';
 interface Props {
   listing: Listing;
   showBreakdown?: boolean;
+  index?: number;
 }
 
-export default function ListingCard({ listing, showBreakdown = true }: Props) {
+export default function ListingCard({ listing, showBreakdown = true, index = 0 }: Props) {
   const [hovered, setHovered] = useState(false);
   const router = useRouter();
   const price = priceDisplay(listing);
+  const enterDelay = `${Math.min(index * 0.06, 0.48)}s`;
 
   return (
     <div
@@ -26,11 +28,12 @@ export default function ListingCard({ listing, showBreakdown = true }: Props) {
         background: '#fff',
         borderRadius: 'var(--radius)',
         border: `2px solid var(--ink)`,
-        boxShadow: hovered ? '4px 4px 0px var(--ink)' : '2px 2px 0px var(--ink)',
+        boxShadow: hovered ? '5px 5px 0px var(--ink)' : '2px 2px 0px var(--ink)',
         overflow: 'hidden',
         cursor: 'pointer',
-        transform: hovered ? 'translate(-1px, -1px)' : 'none',
-        transition: 'all 0.12s ease',
+        transform: hovered ? 'translate(-2px, -2px)' : 'none',
+        transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+        animation: `cardEnter 0.4s ease ${enterDelay} both`,
       }}
     >
       <AppScreenPlaceholder
@@ -64,13 +67,18 @@ export default function ListingCard({ listing, showBreakdown = true }: Props) {
 
         {showBreakdown && listing.breakdown && (
           <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
-            {(Object.entries(listing.breakdown) as [keyof typeof DIMENSION_LABELS, number][]).map(([k, v]) => {
+            {(Object.entries(listing.breakdown) as [keyof typeof DIMENSION_LABELS, number][]).map(([k, v], bi) => {
               const pct = (v / 10) * 100;
               const c = v >= 8 ? 'var(--green)' : v >= 6 ? 'var(--blue)' : v >= 4 ? 'var(--amber)' : 'var(--red)';
+              const barDelay = `${parseFloat(enterDelay) + 0.25 + bi * 0.06}s`;
               return (
                 <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }} title={`${DIMENSION_LABELS[k]}: ${v}/10`}>
-                  <div style={{ width: '100%', height: 5, background: 'var(--border)', borderRadius: 0, overflow: 'hidden', border: '1px solid var(--border2)' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: c }} />
+                  <div style={{ width: '100%', height: 5, background: 'var(--border)', overflow: 'hidden', border: '1px solid var(--border2)' }}>
+                    <div style={{
+                      width: `${pct}%`, height: '100%', background: c,
+                      transformOrigin: 'left',
+                      animation: `barFill 0.55s cubic-bezier(0.22,1,0.36,1) ${barDelay} both`,
+                    }} />
                   </div>
                   <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                     {DIMENSION_LABELS[k]}
