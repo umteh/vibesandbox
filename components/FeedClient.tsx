@@ -161,15 +161,33 @@ export default function FeedClient({ initialListings }: Props) {
       }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/img/robot coding.png" alt="AI robot coding" style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 4, background: 'var(--accent)', border: '2px solid var(--ink)', boxShadow: '2px 2px 0px var(--ink)', marginBottom: 20 }}>
+          <img
+            src="/img/robot coding.png"
+            alt="AI robot coding"
+            className="animate-float"
+            style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }}
+          />
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px',
+            borderRadius: 4, background: 'var(--accent)', border: '2px solid var(--ink)',
+            boxShadow: '2px 2px 0px var(--ink)', marginBottom: 20,
+            animation: 'fadeUp 0.45s ease 0.1s both',
+          }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{scored} apps scored by AI</span>
           </div>
-          <h1 style={{ fontSize: 'clamp(40px, 6vw, 64px)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 16, textWrap: 'balance' } as React.CSSProperties}>
+          <h1 style={{
+            fontSize: 'clamp(40px, 6vw, 64px)', fontWeight: 900, letterSpacing: '-0.04em',
+            lineHeight: 1.05, marginBottom: 16, textWrap: 'balance',
+            animation: 'fadeUp 0.5s ease 0.2s both',
+          } as React.CSSProperties}>
             The marketplace for<br />AI-powered apps
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 8, maxWidth: 480, margin: '0 auto 28px' }}>
+          <p style={{
+            fontSize: 14, color: 'var(--text2)', lineHeight: 1.7,
+            maxWidth: 480, margin: '0 auto 28px',
+            animation: 'fadeUp 0.45s ease 0.35s both',
+          }}>
             Every listing scored by AI across 5 dimensions. Builders sell. Buyers discover.
           </p>
         </div>
@@ -232,8 +250,8 @@ export default function FeedClient({ initialListings }: Props) {
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: 20,
           }}>
-            {filtered.map(l => (
-              <ListingCard key={l.id} listing={l} showBreakdown={showBreakdown} />
+            {filtered.map((l, i) => (
+              <ListingCard key={l.id} listing={l} showBreakdown={showBreakdown} index={i} />
             ))}
           </div>
         )}
