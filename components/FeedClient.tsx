@@ -177,20 +177,22 @@ export default function FeedClient({ initialListings }: Props) {
 
       {/* Filters */}
       <div style={{ borderBottom: '2px solid var(--border2)', background: 'var(--bg)', position: 'sticky', top: 56, zIndex: 40 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', gap: 6, height: 48, overflowX: 'auto' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', gap: 6, height: 52, overflowX: 'auto' }}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCategory(c)} style={{
-              padding: '4px 12px', borderRadius: 4, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
+              padding: '6px 14px', borderRadius: 4, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
+              minHeight: 32,
               border: `2px solid ${category === c ? 'var(--ink)' : 'var(--border2)'}`,
               background: category === c ? 'var(--ink)' : 'transparent',
               color: category === c ? 'var(--accent)' : 'var(--text2)',
+              boxShadow: category === c ? '2px 2px 0px var(--ink)' : 'none',
             }}>{c}</button>
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>Sort:</span>
             {([['score', 'AI Score'], ['newest', 'Newest'], ['price', 'Price']] as const).map(([v, l]) => (
               <button key={v} onClick={() => setSort(v)} style={{
-                padding: '3px 10px', borderRadius: 4, fontSize: 11, fontWeight: 700,
+                padding: '5px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700, minHeight: 30,
                 background: sort === v ? 'var(--accent)' : 'transparent',
                 color: sort === v ? 'var(--ink)' : 'var(--text3)',
                 border: `2px solid ${sort === v ? 'var(--ink)' : 'transparent'}`,
