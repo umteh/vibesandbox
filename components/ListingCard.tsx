@@ -42,15 +42,15 @@ export default function ListingCard({ listing, showBreakdown = true }: Props) {
       <div style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{listing.title}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>{listing.title}</div>
               {listing.platform && listing.platform !== 'web' && (
                 <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 3, border: '1.5px solid var(--border2)', color: 'var(--text3)', background: 'var(--bg)' }}>
                   {listing.platform === 'ios' ? 'iOS' : listing.platform === 'android' ? 'Android' : 'Mobile'}
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text3)', fontFamily: "'DM Mono', monospace" }}>{listing.url}</div>
+            <div style={{ fontSize: 11, color: 'var(--accent-dark)', fontFamily: "'DM Mono', monospace", letterSpacing: '0.01em' }}>{listing.url}</div>
           </div>
           <ScoreBadge score={listing.score} />
         </div>
