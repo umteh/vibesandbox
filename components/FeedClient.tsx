@@ -20,7 +20,7 @@ export default function FeedClient({ initialListings }: Props) {
   const [sort, setSort] = useState<SortKey>('score');
   const [search, setSearch] = useState('');
   const [showBreakdown, setShowBreakdown] = useState(true);
-  const [cardLayout, setCardLayout] = useState<'grid' | 'list'>('grid');
+
 
   const [submitOpen, setSubmitOpen] = useState(false);
   const [auth, setAuth] = useState<'signin' | 'signup' | null>(null);
@@ -208,10 +208,6 @@ export default function FeedClient({ initialListings }: Props) {
               background: showBreakdown ? 'var(--blue-light)' : 'var(--bg)',
               color: showBreakdown ? 'var(--blue)' : 'var(--text3)', fontWeight: 500,
             }}>{showBreakdown ? 'Breakdown: on' : 'Breakdown: off'}</button>
-            <button onClick={() => setCardLayout(v => v === 'grid' ? 'list' : 'grid')} style={{
-              fontSize: 11, padding: '4px 10px', borderRadius: 6,
-              border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text3)', fontWeight: 500,
-            }}>{cardLayout === 'grid' ? 'Grid' : 'List'}</button>
           </div>
         </div>
 
@@ -224,7 +220,7 @@ export default function FeedClient({ initialListings }: Props) {
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: cardLayout === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : '1fr',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: 20,
           }}>
             {filtered.map(l => (

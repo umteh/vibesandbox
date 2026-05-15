@@ -239,7 +239,7 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
                 style={{ flex: 2, padding: 11, background: 'var(--blue)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: submitting ? 0.7 : 1 }}>
                 {submitting ? (
                   <><div className="animate-spin" style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%' }} />Submitting…</>
-                ) : 'Submit & score →'}
+                ) : 'Submit →'}
               </button>
             </div>
           </div>
@@ -270,7 +270,7 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
                     App name <span style={{ color: 'var(--red)' }}>*</span>
                   </label>
-                  <input type="text" required placeholder="App name" value={form.title}
+                  <input type="text" required value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }} />
                 </div>
@@ -293,9 +293,9 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
                 {/* URL */}
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
-                    {form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'App URL (e.g. myapp.com)'} <span style={{ color: 'var(--red)' }}>*</span>
+                    {form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'App URL'} <span style={{ color: 'var(--red)' }}>*</span>
                   </label>
-                  <input type="url" required placeholder={form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'App URL (e.g. myapp.com)'} value={form.url}
+                  <input type="url" required placeholder={form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'e.g. myapp.com'} value={form.url}
                     onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }} />
                 </div>
