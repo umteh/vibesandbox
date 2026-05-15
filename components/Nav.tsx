@@ -76,7 +76,7 @@ export default function Nav({ user, search, onSearchChange, onSignIn, onSignUp, 
             placeholder="Search apps…"
             value={search}
             onChange={e => onSearchChange(e.target.value)}
-            style={{ width: '100%', padding: '7px 12px 7px 30px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, outline: 'none', background: '#fff' }}
+            style={{ width: '100%', padding: '7px 12px 7px 30px', border: '2px solid var(--border)', borderRadius: 4, fontSize: 13, outline: 'none', background: 'oklch(1 0 0 / 0.6)' }}
           />
         </div>
 
