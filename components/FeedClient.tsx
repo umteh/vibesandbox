@@ -151,19 +151,26 @@ export default function FeedClient({ initialListings }: Props) {
       />
 
       {/* Hero */}
-      <div style={{ background: 'var(--bg)', borderBottom: '2px solid var(--border2)', padding: '48px 24px 40px', textAlign: 'center' }}>
+      <div style={{
+        background: 'var(--bg)',
+        borderBottom: '2px solid var(--border2)',
+        padding: '52px 24px 44px',
+        textAlign: 'center',
+        backgroundImage: 'radial-gradient(circle, oklch(0.55 0.008 260 / 0.06) 1px, transparent 1px)',
+        backgroundSize: '20px 20px',
+      }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/img/robot coding.png" alt="AI robot coding" style={{ height: 160, width: 'auto', display: 'block', margin: '0 auto' }} />
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 4, background: 'var(--accent)', border: '2px solid var(--ink)', marginBottom: 16 }}>
+          <img src="/img/robot coding.png" alt="AI robot coding" style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }} />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 4, background: 'var(--accent)', border: '2px solid var(--ink)', boxShadow: '2px 2px 0px var(--ink)', marginBottom: 20 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{scored} apps scored by AI</span>
           </div>
-          <h1 style={{ fontSize: 40, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 12 }}>
+          <h1 style={{ fontSize: 'clamp(40px, 6vw, 64px)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 16, textWrap: 'balance' } as React.CSSProperties}>
             The marketplace for<br />AI-powered apps
           </h1>
-          <p style={{ fontSize: 15, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 28 }}>
-            Every listing is scored by AI across 5 dimensions — problem clarity, UX, AI integration, polish, and novelty. Builders sell. Buyers discover. No payment processing.
+          <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 8, maxWidth: 480, margin: '0 auto 28px' }}>
+            Every listing scored by AI across 5 dimensions. Builders sell. Buyers discover.
           </p>
         </div>
       </div>
