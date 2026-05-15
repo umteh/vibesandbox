@@ -157,9 +157,10 @@ export default function Nav({ user, search, onSearchChange, onSignIn, onSignUp, 
           <button
             onClick={onSubmit}
             style={{
-              marginLeft: 8, padding: '8px 18px', background: 'var(--ink)', color: '#fff',
+              marginLeft: 8, padding: '8px 18px', background: 'var(--ink)', color: 'var(--accent)',
               borderRadius: 4, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5,
-              borderBottom: '3px solid var(--accent)',
+              border: '2px solid var(--ink)',
+              boxShadow: '2px 2px 0px var(--accent-dark)',
             }}
           >
             <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Start selling
