@@ -63,16 +63,16 @@ export default function ListingCard({ listing, showBreakdown = true }: Props) {
         </p>
 
         {showBreakdown && listing.breakdown && (
-          <div style={{ marginBottom: 12, display: 'flex', gap: 6 }}>
+          <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
             {(Object.entries(listing.breakdown) as [keyof typeof DIMENSION_LABELS, number][]).map(([k, v]) => {
               const pct = (v / 10) * 100;
               const c = v >= 8 ? 'var(--green)' : v >= 6 ? 'var(--blue)' : v >= 4 ? 'var(--amber)' : 'var(--red)';
               return (
                 <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }} title={`${DIMENSION_LABELS[k]}: ${v}/10`}>
-                  <div style={{ width: '100%', height: 3, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: c, borderRadius: 2 }} />
+                  <div style={{ width: '100%', height: 5, background: 'var(--border)', borderRadius: 0, overflow: 'hidden', border: '1px solid var(--border2)' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: c }} />
                   </div>
-                  <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 9, color: 'var(--text3)', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                     {DIMENSION_LABELS[k]}
                   </span>
                 </div>
