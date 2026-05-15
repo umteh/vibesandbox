@@ -161,7 +161,12 @@ export default function Nav({ user, search, onSearchChange, onSignIn, onSignUp, 
               borderRadius: 4, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5,
               border: '2px solid var(--ink)',
               boxShadow: '2px 2px 0px var(--accent-dark)',
+              transition: 'transform 0.1s ease, box-shadow 0.1s ease',
             }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-1px,-1px)'; e.currentTarget.style.boxShadow = '3px 3px 0px var(--accent-dark)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '2px 2px 0px var(--accent-dark)'; }}
+            onMouseDown={e => { e.currentTarget.style.transform = 'translate(1px,1px)'; e.currentTarget.style.boxShadow = '1px 1px 0px var(--accent-dark)'; }}
+            onMouseUp={e => { e.currentTarget.style.transform = 'translate(-1px,-1px)'; e.currentTarget.style.boxShadow = '3px 3px 0px var(--accent-dark)'; }}
           >
             <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> Start selling
           </button>

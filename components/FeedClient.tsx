@@ -204,6 +204,7 @@ export default function FeedClient({ initialListings }: Props) {
               background: category === c ? 'var(--ink)' : 'transparent',
               color: category === c ? 'var(--accent)' : 'var(--text2)',
               boxShadow: category === c ? '2px 2px 0px var(--ink)' : 'none',
+              transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
             }}>{c}</button>
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>

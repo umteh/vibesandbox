@@ -36,6 +36,7 @@ export default function ScoreBadge({ score, size = 'md' }: Props) {
       fontSize: size === 'lg' ? 15 : 12, fontWeight: 700, color: c.text,
       fontFamily: "'DM Mono', monospace", letterSpacing: '0.02em',
       whiteSpace: 'nowrap',
+      animation: 'pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both',
     }}>
       {score}
       <span style={{ fontSize: size === 'lg' ? 11 : 9, fontWeight: 500, opacity: 0.7 }}>/100</span>
