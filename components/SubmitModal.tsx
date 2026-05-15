@@ -27,17 +27,45 @@ interface Props {
   supabaseUserId: string | null;
 }
 
+function detectPlatform(url: string): Platform | null {
+  try {
+    const normalized = url.startsWith('http') ? url : `https://${url}`;
+    const host = new URL(normalized).hostname.toLowerCase();
+    if (host.includes('apps.apple.com') || host.includes('testflight.apple.com')) return 'ios';
+    if (host.includes('play.google.com')) return 'android';
+    if (url.trim().length > 0) return 'web';
+  } catch {}
+  return null;
+}
+
 export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUserId }: Props) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>({
     title: '', url: '', description: '', category: 'Productivity', platform: 'web',
     price: '', priceType: 'fixed', screenshotPreview: null, screenshotFile: null,
   });
+  const [platformAutoDetected, setPlatformAutoDetected] = useState(false);
   const [metadata, setMetadata] = useState<ListingMetadata>({});
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function handleUrlChange(url: string) {
+    const detected = detectPlatform(url);
+    if (detected) {
+      setForm(f => ({ ...f, url, platform: detected }));
+      setPlatformAutoDetected(true);
+    } else {
+      setForm(f => ({ ...f, url }));
+      setPlatformAutoDetected(false);
+    }
+  }
+
+  function handlePlatformChange(p: Platform) {
+    setForm(f => ({ ...f, platform: p }));
+    setPlatformAutoDetected(false);
+  }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -265,23 +293,34 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
 
             {step === 1 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* App name */}
+                {/* URL — first, drives platform detection */}
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
-                    App name <span style={{ color: 'var(--red)' }}>*</span>
+                    App URL <span style={{ color: 'var(--red)' }}>*</span>
                   </label>
-                  <input type="text" required value={form.title}
-                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }} />
+                  <input
+                    type="url"
+                    required
+                    autoFocus
+                    placeholder="myapp.com — or paste App Store / Play Store URL"
+                    value={form.url}
+                    onChange={e => handleUrlChange(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }}
+                  />
                 </div>
-                {/* Platform */}
+                {/* Platform — auto-detected from URL, manually overridable */}
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
                     Platform <span style={{ color: 'var(--red)' }}>*</span>
+                    {platformAutoDetected && (
+                      <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, color: 'var(--green)', background: 'var(--green-light)', padding: '1px 7px', borderRadius: 4 }}>
+                        auto-detected
+                      </span>
+                    )}
                   </label>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    {([['web', '🌐 Web'], ['ios', '🍎 iOS'], ['android', '🤖 Android'], ['cross-platform', '📱 Cross-platform']] as const).map(([v, l]) => (
-                      <button type="button" key={v} onClick={() => setForm(f => ({ ...f, platform: v }))} style={{
+                    {([['web', '🌐 Web'], ['ios', '🍎 iOS'], ['android', '🤖 Android'], ['cross-platform', '📱 Both']] as const).map(([v, l]) => (
+                      <button type="button" key={v} onClick={() => handlePlatformChange(v)} style={{
                         flex: 1, padding: '8px 4px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                         border: `2px solid ${form.platform === v ? 'var(--ink)' : 'var(--border)'}`,
                         background: form.platform === v ? 'var(--accent)' : 'var(--bg)',
@@ -290,13 +329,13 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
                     ))}
                   </div>
                 </div>
-                {/* URL */}
+                {/* App name */}
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 5 }}>
-                    {form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'App URL'} <span style={{ color: 'var(--red)' }}>*</span>
+                    App name <span style={{ color: 'var(--red)' }}>*</span>
                   </label>
-                  <input type="url" required placeholder={form.platform === 'ios' ? 'App Store URL' : form.platform === 'android' ? 'Play Store URL' : form.platform === 'cross-platform' ? 'App Store or Play Store URL' : 'e.g. myapp.com'} value={form.url}
-                    onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
+                  <input type="text" required value={form.title}
+                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                     style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: 'var(--bg)' }} />
                 </div>
                 <div>
