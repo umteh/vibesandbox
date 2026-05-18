@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 import { Listing } from '@/lib/data';
 
 interface Props {
@@ -11,7 +12,33 @@ type State = 'idle' | 'sending' | 'sent' | 'duplicate' | 'error';
 
 export default function ListingContactForm({ listing }: Props) {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [prefilled, setPrefilled] = useState(false);
   const [state, setState] = useState<State>('idle');
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    const sb = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    sb.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const email = data.user.email ?? '';
+      // Try to get display_name from profile
+      const { data: profile } = await sb
+        .from('profiles')
+        .select('display_name')
+        .eq('id', data.user.id)
+        .single();
+      const name = profile?.display_name || email.split('@')[0];
+      setForm(f => ({
+        ...f,
+        name: f.name || name,
+        email: f.email || email,
+      }));
+      setPrefilled(true);
+    });
+  }, []);
   const [errorMsg, setErrorMsg] = useState('');
 
   async function submit(e: React.FormEvent) {
@@ -70,9 +97,18 @@ export default function ListingContactForm({ listing }: Props) {
 
   return (
     <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Contact Seller</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>Contact Seller</div>
+        {prefilled && (
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--green)', background: 'var(--green-light)', padding: '2px 8px', borderRadius: 4 }}>
+            pre-filled from account
+          </span>
+        )}
+      </div>
       <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>
-        No login required. Your message is relayed once to the seller&apos;s email. The link expires in 24h.
+        {prefilled
+          ? 'Your message is relayed once to the seller\'s email. The link expires in 24h.'
+          : 'No login required. Your message is relayed once to the seller\'s email. The link expires in 24h.'}
       </p>
 
       {state === 'duplicate' && (
