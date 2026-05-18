@@ -117,7 +117,10 @@ export async function POST(req: NextRequest) {
   // Record in submission log
   await admin.from('submission_log').insert({ user_id: user.id, listing_id: listing.id });
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  // NEXT_PUBLIC_SITE_URL = production domain (vibesandbox.store)
+  // VERCEL_URL = auto-set by Vercel on every deployment (preview + prod)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
   // Fire-and-forget: score the listing (captures screenshot + calls GPT-4o)
   if (process.env.INTERNAL_SECRET) {
