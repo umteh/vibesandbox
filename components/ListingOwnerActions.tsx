@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Listing, CATEGORIES, priceDisplay } from '@/lib/data';
+import { ListingMetadata } from '@/lib/metadata';
+import PitchSection from './PitchSection';
+import DueDiligenceSection from './DueDiligenceSection';
 
 interface Props {
   listing: Listing;
@@ -24,6 +27,9 @@ export default function ListingOwnerActions({ listing }: Props) {
     priceType: listing.priceType,
     price: listing.price ? String(listing.price) : '',
   });
+  const [metadata, setMetadata] = useState<ListingMetadata>(
+    (listing.listing_metadata as ListingMetadata) ?? {}
+  );
 
   async function handleDelete() {
     setDeleting(true);
@@ -54,6 +60,7 @@ export default function ListingOwnerActions({ listing }: Props) {
         category: form.category,
         price_type: form.priceType,
         price_cents: form.priceType === 'fixed' && form.price ? Math.round(parseFloat(form.price) * 100) : null,
+        listing_metadata: metadata,
       }),
     });
     setSaving(false);
@@ -115,6 +122,39 @@ export default function ListingOwnerActions({ listing }: Props) {
               </div>
             )}
           </div>
+          {/* Pitch */}
+          <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>The Pitch</div>
+            <PitchSection
+              value={metadata.pitch}
+              onChange={v => setMetadata(m => ({ ...m, pitch: v }))}
+            />
+          </div>
+
+          {/* Due Diligence */}
+          <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, color: 'var(--text)' }}>Due Diligence</div>
+            <DueDiligenceSection
+              value={metadata.due_diligence}
+              onChange={v => setMetadata(m => ({ ...m, due_diligence: v }))}
+            />
+          </div>
+
+          {/* Notes */}
+          <div style={{ paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: 'var(--text)' }}>Anything else?</div>
+            <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 10 }}>
+              Known issues, growth plans, why you&apos;re selling, deal preferences.
+            </p>
+            <textarea
+              rows={3}
+              placeholder="e.g. Revenue is seasonal — peaks in Q4. Happy to do a 2-week handover."
+              value={(metadata as { notes?: string }).notes ?? ''}
+              onChange={e => setMetadata(m => ({ ...m, notes: e.target.value }))}
+              style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, outline: 'none', resize: 'vertical', background: '#fff', lineHeight: 1.6 }}
+            />
+          </div>
+
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
             <button type="button" onClick={() => setEditing(false)}
               style={{ flex: 1, padding: 11, border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, fontWeight: 500, color: 'var(--text2)', background: 'var(--bg)' }}>

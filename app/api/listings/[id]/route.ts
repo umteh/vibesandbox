@@ -49,7 +49,7 @@ export async function PATCH(
   if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (listing.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const allowed = ['title', 'url', 'description', 'category', 'price_cents', 'price_type', 'tags'];
+  const allowed = ['title', 'url', 'description', 'category', 'price_cents', 'price_type', 'tags', 'listing_metadata'];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
