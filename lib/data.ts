@@ -35,20 +35,30 @@ export interface Listing {
 
 export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Other'] as const;
 
-export const DIMENSION_LABELS: Record<keyof ScoreBreakdown, string> = {
+export const DIMENSION_LABELS: Record<string, string> = {
+  // current
   problem_clarity:    'Problem',
   ux_quality:         'UX',
   monetization:       'Revenue',
   market_opportunity: 'Market',
   defensibility:      'Moat',
+  // legacy (pre-v2 DB rows)
+  ai_integration:     'AI Core',
+  polish:             'Polish',
+  novelty:            'Novelty',
 };
 
-export const DIMENSION_WEIGHTS: Record<keyof ScoreBreakdown, number> = {
+export const DIMENSION_WEIGHTS: Record<string, number> = {
+  // current
   problem_clarity:    25,
   ux_quality:         20,
   monetization:       20,
   market_opportunity: 20,
   defensibility:      15,
+  // legacy
+  ai_integration:     20,
+  polish:             15,
+  novelty:            15,
 };
 
 export const LISTINGS: Listing[] = [
