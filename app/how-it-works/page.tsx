@@ -16,7 +16,7 @@ const STEPS = [
   {
     number: '02',
     title: 'AI scores it automatically',
-    description: 'Our AI takes a screenshot of your app and evaluates it across 5 dimensions — problem clarity, UX quality, AI integration, polish, and novelty. Score arrives within 5 minutes.',
+    description: 'Our AI fetches your app\'s metadata, takes a screenshot, and scores it across 5 dimensions — problem clarity, UX quality, monetization, market opportunity, and defensibility. Score arrives within 5 minutes.',
     color: 'var(--amber)',
     bg: 'var(--amber-light)',
   },
@@ -128,7 +128,7 @@ const FAQS = [
   },
   {
     q: 'What if my score feels wrong?',
-    a: 'Scores are based on what the AI can evaluate from your public URL and description. A strong "AI Secret Sauce" description in your pitch improves the AI Integration and Novelty scores significantly.',
+    a: 'Scores are based on what the AI can evaluate from your URL, metadata, and description. A strong pitch with clear pricing and a well-defined target market improves your Monetization and Market Opportunity scores significantly.',
   },
   {
     q: 'How does the email relay work?',
