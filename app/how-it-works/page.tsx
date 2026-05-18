@@ -26,6 +26,7 @@ const STEPS = [
     description: 'Your listing appears in the public feed, sorted by AI score. Buyers browse, filter by category and price, and read the AI critique to decide if your app fits their needs.',
     color: 'var(--green)',
     bg: 'var(--green-light)',
+    categories: ['Productivity', 'Writing', 'Code', 'Design', 'Research', 'Health', 'Education', 'Finance', 'Marketing', 'Social', 'Other'],
   },
   {
     number: '04',
@@ -190,7 +191,18 @@ export default function HowItWorksPage() {
               </div>
               <div style={{ paddingTop: 10, paddingBottom: i < STEPS.length - 1 ? 32 : 0 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{step.title}</div>
-                <p style={{ fontSize: 15, color: 'var(--text2)', lineHeight: 1.7 }}>{step.description}</p>
+                <p style={{ fontSize: 15, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 'categories' in step ? 14 : 0 }}>{step.description}</p>
+                {'categories' in step && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {(step as typeof step & { categories: string[] }).categories.map(c => (
+                      <span key={c} style={{
+                        fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 4,
+                        border: '2px solid var(--ink)', background: 'var(--bg)',
+                        color: 'var(--text)', fontFamily: "'DM Mono', monospace",
+                      }}>{c}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
