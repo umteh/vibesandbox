@@ -3,11 +3,11 @@ export type ListingStatus = 'pending' | 'scored' | 'scoring_failed' | 'rejected'
 export type ScreenshotStatus = 'pending' | 'captured' | 'failed' | 'auth_required';
 
 export interface ScoreBreakdown {
-  problem_clarity: number;
-  ux_quality: number;
-  ai_integration: number;
-  polish: number;
-  novelty: number;
+  problem_clarity:   number;
+  ux_quality:        number;
+  monetization:      number;
+  market_opportunity: number;
+  defensibility:     number;
 }
 
 export interface Listing {
@@ -36,19 +36,19 @@ export interface Listing {
 export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Other'] as const;
 
 export const DIMENSION_LABELS: Record<keyof ScoreBreakdown, string> = {
-  problem_clarity: 'Problem',
-  ux_quality: 'UX',
-  ai_integration: 'AI Core',
-  polish: 'Polish',
-  novelty: 'Novelty',
+  problem_clarity:    'Problem',
+  ux_quality:         'UX',
+  monetization:       'Revenue',
+  market_opportunity: 'Market',
+  defensibility:      'Moat',
 };
 
 export const DIMENSION_WEIGHTS: Record<keyof ScoreBreakdown, number> = {
-  problem_clarity: 25,
-  ux_quality: 25,
-  ai_integration: 20,
-  polish: 15,
-  novelty: 15,
+  problem_clarity:    25,
+  ux_quality:         20,
+  monetization:       20,
+  market_opportunity: 20,
+  defensibility:      15,
 };
 
 export const LISTINGS: Listing[] = [
@@ -58,7 +58,7 @@ export const LISTINGS: Listing[] = [
     category: 'Productivity', price: 49, priceType: 'fixed',
     creator: 'Marcus T.', avatar: 'MT',
     status: 'scored', score: 84,
-    breakdown: { problem_clarity: 9, ux_quality: 8, ai_integration: 9, polish: 8, novelty: 7 },
+    breakdown: { problem_clarity: 9, ux_quality: 8, monetization: 8, market_opportunity: 7, defensibility: 8 },
     critique: 'ReplyZen nails the persona-matching problem that Gmail Smart Reply fumbles. The onboarding is frictionless — connecting Google takes 30 seconds and the first draft appears before you finish reading the email. AI integration is core: the model genuinely learns your hedging patterns and sign-off style. Loses points on novelty since email-AI is crowded, but execution here is top-tier.',
     tags: ['email', 'productivity', 'voice'],
     createdAt: '2d ago',
@@ -69,7 +69,7 @@ export const LISTINGS: Listing[] = [
     category: 'Code', price: 0, priceType: 'free',
     creator: 'Priya S.', avatar: 'PS',
     status: 'scored', score: 76,
-    breakdown: { problem_clarity: 8, ux_quality: 7, ai_integration: 8, polish: 7, novelty: 8 },
+    breakdown: { problem_clarity: 8, ux_quality: 7, monetization: 4, market_opportunity: 8, defensibility: 6 },
     critique: "The problem is sharp: most codebases are opaque to outsiders and README files are afterthoughts. Codeclip's AI synthesizes entry points and generates a guided walkthrough that respects file structure. UX is clean though the repo size limit (100MB) is hit without a useful error. Novelty is strong — this angle on codebase comprehension hasn't been productized well.",
     tags: ['github', 'learning', 'open-source'],
     createdAt: '4d ago',
@@ -80,7 +80,7 @@ export const LISTINGS: Listing[] = [
     category: 'Design', price: null, priceType: 'offer',
     creator: 'Lena K.', avatar: 'LK',
     status: 'scored', score: 61,
-    breakdown: { problem_clarity: 6, ux_quality: 7, ai_integration: 6, polish: 6, novelty: 5 },
+    breakdown: { problem_clarity: 6, ux_quality: 7, monetization: 5, market_opportunity: 6, defensibility: 4 },
     critique: "Competent execution of an overcrowded idea. The image curation is decent but indistinguishable from a Pinterest search with a GPT wrapper. AI integration doesn't feel core — swapping the backend for a keyword search would produce similar results. UX is clean but lacks the \"wow\" moment that would make this shareable. Needs a stronger differentiator to stand out in the design tools space.",
     tags: ['design', 'images', 'creative'],
     createdAt: '1w ago',
@@ -91,7 +91,7 @@ export const LISTINGS: Listing[] = [
     category: 'Writing', price: 29, priceType: 'fixed',
     creator: 'James O.', avatar: 'JO',
     status: 'scored', score: 91,
-    breakdown: { problem_clarity: 10, ux_quality: 9, ai_integration: 9, polish: 9, novelty: 9 },
+    breakdown: { problem_clarity: 10, ux_quality: 9, monetization: 8, market_opportunity: 8, defensibility: 9 },
     critique: "This is the best writing tool I've seen submitted to date. The \"argue back\" mechanic is genuinely novel — instead of completing your sentences, the AI challenges your premises and asks why. Forces better thinking. The UI is distraction-free and the argument panel is unobtrusive until needed. Problem is crisply stated: writers need resistance, not assistance. Would score higher if the mobile experience weren't an afterthought.",
     tags: ['writing', 'thinking', 'long-form'],
     createdAt: '3d ago',
@@ -102,7 +102,7 @@ export const LISTINGS: Listing[] = [
     category: 'Research', price: 19, priceType: 'fixed',
     creator: 'Fatima A.', avatar: 'FA',
     status: 'scored', score: 73,
-    breakdown: { problem_clarity: 8, ux_quality: 7, ai_integration: 8, polish: 7, novelty: 6 },
+    breakdown: { problem_clarity: 8, ux_quality: 7, monetization: 7, market_opportunity: 7, defensibility: 6 },
     critique: 'Chat-with-PDF is saturated, but PaperMind earns its differentiation through citation awareness — asking "what does this claim cite?" actually pulls the right passage. Useful for researchers. UX is functional but the PDF upload flow has a confusing intermediate state where nothing happens for 8–12 seconds with no spinner. Polish gap there. Novelty score limited by category crowding.',
     tags: ['research', 'pdf', 'academic'],
     createdAt: '5d ago',
@@ -124,7 +124,7 @@ export const LISTINGS: Listing[] = [
     category: 'Other', price: 9, priceType: 'fixed',
     creator: 'Chen W.', avatar: 'CW',
     status: 'scored', score: 55,
-    breakdown: { problem_clarity: 6, ux_quality: 6, ai_integration: 5, polish: 5, novelty: 5 },
+    breakdown: { problem_clarity: 6, ux_quality: 6, monetization: 7, market_opportunity: 5, defensibility: 4 },
     critique: 'Addresses a real pain (naming is hard) but the AI suggestions feel generic — mostly portmanteaus and dropped vowels. The domain check is the best feature and works reliably. AI feels like decoration over a wordlist. Trademark scan is surface-level and shouldn\'t be positioned as legal guidance. Solid V1 but needs a meaningful leap in suggestion quality to compete.',
     tags: ['naming', 'domains', 'branding'],
     createdAt: '2w ago',
@@ -135,7 +135,7 @@ export const LISTINGS: Listing[] = [
     category: 'Design', price: 39, priceType: 'fixed',
     creator: 'Ola B.', avatar: 'OB',
     status: 'scored', score: 68,
-    breakdown: { problem_clarity: 7, ux_quality: 7, ai_integration: 7, polish: 7, novelty: 6 },
+    breakdown: { problem_clarity: 7, ux_quality: 7, monetization: 8, market_opportunity: 8, defensibility: 6 },
     critique: "Solves a real problem: turning content into slides is tedious and existing tools (Beautiful.ai, Tome) feel overbuilt. SlideGeist's layouts are actually tasteful — rare for an AI output. The \"doesn't look AI-made\" claim holds for most outputs. Loses points for limited export options (PDF only, no PowerPoint) and occasional layout breaks on long paragraphs.",
     tags: ['slides', 'presentations', 'content'],
     createdAt: '6d ago',
