@@ -33,7 +33,7 @@ export interface Listing {
   platform?: 'web' | 'ios' | 'android' | 'cross-platform';
 }
 
-export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Other'] as const;
+export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Health', 'Education', 'Finance', 'Marketing', 'Social', 'Other'] as const;
 
 // Canonical ordered dimension list — always render in this order
 export const DIMENSIONS_ORDERED = [
@@ -179,11 +179,16 @@ export const AVATAR_COLORS: Record<string, string> = {
 
 export const CATEGORY_COLORS: Record<string, [string, string]> = {
   Productivity: ['oklch(0.92 0.05 252)', 'oklch(0.78 0.12 252)'],
-  Writing: ['oklch(0.92 0.05 310)', 'oklch(0.78 0.12 310)'],
-  Code: ['oklch(0.15 0.02 260)', 'oklch(0.35 0.08 260)'],
-  Design: ['oklch(0.92 0.05 30)', 'oklch(0.78 0.12 30)'],
-  Research: ['oklch(0.92 0.05 152)', 'oklch(0.78 0.12 152)'],
-  Other: ['oklch(0.92 0.05 80)', 'oklch(0.78 0.12 80)'],
+  Writing:      ['oklch(0.92 0.05 310)', 'oklch(0.78 0.12 310)'],
+  Code:         ['oklch(0.15 0.02 260)', 'oklch(0.35 0.08 260)'],
+  Design:       ['oklch(0.92 0.05 30)',  'oklch(0.78 0.12 30)'],
+  Research:     ['oklch(0.92 0.05 152)', 'oklch(0.78 0.12 152)'],
+  Health:       ['oklch(0.92 0.05 160)', 'oklch(0.65 0.16 160)'],
+  Education:    ['oklch(0.92 0.05 220)', 'oklch(0.68 0.14 220)'],
+  Finance:      ['oklch(0.92 0.05 145)', 'oklch(0.55 0.16 145)'],
+  Marketing:    ['oklch(0.92 0.05 22)',  'oklch(0.62 0.18 22)'],
+  Social:       ['oklch(0.92 0.05 280)', 'oklch(0.62 0.16 280)'],
+  Other:        ['oklch(0.92 0.05 80)',  'oklch(0.78 0.12 80)'],
 };
 
 // Maps a Supabase DB row to the Listing interface used by components
