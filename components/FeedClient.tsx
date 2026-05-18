@@ -195,7 +195,13 @@ export default function FeedClient({ initialListings }: Props) {
 
       {/* Filters */}
       <div style={{ borderBottom: '2px solid var(--border2)', background: 'var(--bg)', position: 'sticky', top: 56, zIndex: 40 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', gap: 6, height: 52, overflowX: 'auto' }}>
+        {/* Fade-out gradient on right edge signals horizontal scroll */}
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(to right, transparent, var(--bg))',
+          }} />
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', gap: 6, height: 52, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
           {CATEGORIES.map(c => (
             <button key={c} onClick={() => setCategory(c)} style={{
               padding: '6px 14px', borderRadius: 4, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
@@ -218,6 +224,7 @@ export default function FeedClient({ initialListings }: Props) {
               }}>{l}</button>
             ))}
           </div>
+        </div>
         </div>
       </div>
 
