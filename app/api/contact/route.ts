@@ -148,7 +148,6 @@ async function forwardRelay(
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) {
     console.warn('[contact] RESEND_API_KEY not set — skipping email send in dev');
-    // Mark as sent anyway in dev so we can test the flow
     await admin.from('relay_tokens').update({
       forwarded_at: new Date().toISOString(),
       forward_status: 'sent',
@@ -156,8 +155,14 @@ async function forwardRelay(
     return NextResponse.json({ message: 'Message sent.' }, { status: 200 });
   }
 
+  const fromDomain = process.env.RESEND_FROM_DOMAIN;
+  if (!fromDomain) {
+    console.error('[contact] RESEND_FROM_DOMAIN not set — cannot send email. Add a verified Resend domain.');
+    await admin.from('relay_tokens').update({ forward_status: 'failed' }).eq('id', tokenId);
+    return NextResponse.json({ error: 'Email not configured — RESEND_FROM_DOMAIN missing.' }, { status: 500 });
+  }
+
   const resend = new Resend(resendKey);
-  const fromDomain = process.env.RESEND_FROM_DOMAIN || 'vibesandbox.app';
 
   const { error: emailError } = await resend.emails.send({
     from: `VibeSandbox <relay@${fromDomain}>`,
@@ -185,9 +190,10 @@ async function forwardRelay(
   });
 
   if (emailError) {
-    console.error(`[contact] Resend failed for token ${tokenId}:`, emailError);
+    console.error(`[contact] Resend failed for token ${tokenId}:`, JSON.stringify(emailError));
     await admin.from('relay_tokens').update({ forward_status: 'failed' }).eq('id', tokenId);
-    return NextResponse.json({ error: 'Failed to send email.' }, { status: 500 });
+    const detail = (emailError as { message?: string }).message ?? 'Unknown Resend error';
+    return NextResponse.json({ error: `Failed to send email: ${detail}` }, { status: 500 });
   }
 
   await admin.from('relay_tokens').update({
