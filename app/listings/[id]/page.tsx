@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { LISTINGS, fromDbRow, Listing, DIMENSION_LABELS, DIMENSION_WEIGHTS, priceDisplay, scoreColor } from '@/lib/data';
+import { LISTINGS, fromDbRow, Listing, DIMENSION_LABELS, DIMENSION_WEIGHTS, DIMENSIONS_ORDERED, priceDisplay, scoreColor } from '@/lib/data';
 import ScoreBadge from '@/components/ScoreBadge';
 import DimBar from '@/components/DimBar';
 import Avatar from '@/components/Avatar';
@@ -115,8 +115,13 @@ export default async function ListingPage({ params }: { params: { id: string } }
                 </div>
                 {listing.breakdown && (
                   <div style={{ marginBottom: 20 }}>
-                    {(Object.entries(listing.breakdown) as [keyof typeof DIMENSION_LABELS, number][]).map(([k, v]) => (
-                      <DimBar key={k} label={DIMENSION_LABELS[k]} value={v} weight={DIMENSION_WEIGHTS[k]} />
+                    {DIMENSIONS_ORDERED.map(k => (
+                      <DimBar
+                        key={k}
+                        label={DIMENSION_LABELS[k]}
+                        value={(listing.breakdown as unknown as Record<string, number>)[k] ?? 0}
+                        weight={DIMENSION_WEIGHTS[k]}
+                      />
                     ))}
                   </div>
                 )}

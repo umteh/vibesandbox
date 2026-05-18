@@ -35,30 +35,31 @@ export interface Listing {
 
 export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Other'] as const;
 
-export const DIMENSION_LABELS: Record<string, string> = {
-  // current
+// Canonical ordered dimension list — always render in this order
+export const DIMENSIONS_ORDERED = [
+  'problem_clarity',
+  'ux_quality',
+  'monetization',
+  'market_opportunity',
+  'defensibility',
+] as const;
+
+export type DimensionKey = typeof DIMENSIONS_ORDERED[number];
+
+export const DIMENSION_LABELS: Record<DimensionKey, string> = {
   problem_clarity:    'Problem',
   ux_quality:         'UX',
   monetization:       'Revenue',
   market_opportunity: 'Market',
   defensibility:      'Moat',
-  // legacy (pre-v2 DB rows)
-  ai_integration:     'AI Core',
-  polish:             'Polish',
-  novelty:            'Novelty',
 };
 
-export const DIMENSION_WEIGHTS: Record<string, number> = {
-  // current
+export const DIMENSION_WEIGHTS: Record<DimensionKey, number> = {
   problem_clarity:    25,
   ux_quality:         20,
   monetization:       20,
   market_opportunity: 20,
   defensibility:      15,
-  // legacy
-  ai_integration:     20,
-  polish:             15,
-  novelty:            15,
 };
 
 export const LISTINGS: Listing[] = [

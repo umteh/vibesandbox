@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Listing, DIMENSION_LABELS, priceDisplay } from '@/lib/data';
+import { Listing, DIMENSION_LABELS, DIMENSIONS_ORDERED, priceDisplay } from '@/lib/data';
 import ScoreBadge from './ScoreBadge';
 import Avatar from './Avatar';
 import AppScreenPlaceholder from './AppScreenPlaceholder';
@@ -67,7 +67,8 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
 
         {showBreakdown && listing.breakdown && (
           <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
-            {(Object.entries(listing.breakdown) as [keyof typeof DIMENSION_LABELS, number][]).map(([k, v], bi) => {
+            {DIMENSIONS_ORDERED.map((k, bi) => {
+              const v = (listing.breakdown as unknown as Record<string, number>)[k] ?? 0;
               const pct = (v / 10) * 100;
               const c = v >= 8 ? 'var(--green)' : v >= 6 ? 'var(--blue)' : v >= 4 ? 'var(--amber)' : 'var(--red)';
               const barDelay = `${parseFloat(enterDelay) + 0.25 + bi * 0.06}s`;
