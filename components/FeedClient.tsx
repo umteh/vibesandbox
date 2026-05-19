@@ -181,7 +181,7 @@ export default function FeedClient({ initialListings }: Props) {
             lineHeight: 1.05, marginBottom: 16, textWrap: 'balance',
             animation: 'fadeUp 0.5s ease 0.2s both',
           } as React.CSSProperties}>
-            The marketplace for<br />AI-powered apps
+            Where builders<br />find buyers
           </h1>
           <p style={{
             fontSize: 14, color: 'var(--text2)', lineHeight: 1.7,
