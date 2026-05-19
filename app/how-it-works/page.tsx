@@ -319,6 +319,7 @@ export default function HowItWorksPage() {
           <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox · AI curation · No payment processing</span>
           <div style={{ display: 'flex', gap: 16 }}>
             <a href="/deal-guide" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Deal guide</a>
+            <a href="/feedback" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feedback</a>
             <a href="/feed" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feed</a>
           </div>
         </div>

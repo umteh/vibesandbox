@@ -272,9 +272,7 @@ export default function FeedClient({ initialListings }: Props) {
           <div style={{ display: 'flex', gap: 16 }}>
             <a href="/how-it-works" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>How it works</a>
             <a href="/deal-guide" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Deal guide</a>
-            {['About'].map(l => (
-              <a key={l} href="#" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>{l}</a>
-            ))}
+            <a href="/feedback" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feedback</a>
           </div>
         </div>
       </footer>
