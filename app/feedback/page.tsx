@@ -8,6 +8,7 @@ type FeedbackType = 'Bug' | 'Feature' | 'General';
 export default function FeedbackPage() {
   const [form, setForm] = useState({ type: 'General' as FeedbackType, message: '', email: '' });
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,8 +19,15 @@ export default function FeedbackPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      setState(res.ok ? 'sent' : 'error');
+      if (res.ok) {
+        setState('sent');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.error ?? 'Something went wrong.');
+        setState('error');
+      }
     } catch {
+      setErrorMsg('Network error. Please try again.');
       setState('error');
     }
   }
@@ -116,7 +124,7 @@ export default function FeedbackPage() {
 
               {state === 'error' && (
                 <div style={{ padding: '10px 14px', background: 'var(--red-light)', border: '1px solid var(--red)', borderRadius: 6, fontSize: 13, color: 'var(--text)' }}>
-                  Something went wrong. Try again.
+                  {errorMsg || 'Something went wrong. Try again.'}
                 </div>
               )}
 
