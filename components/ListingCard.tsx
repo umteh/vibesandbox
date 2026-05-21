@@ -53,7 +53,6 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--accent-dark)', fontFamily: "'DM Mono', monospace", letterSpacing: '0.01em' }}>{listing.url}</div>
           </div>
           <ScoreBadge score={listing.score} />
         </div>
