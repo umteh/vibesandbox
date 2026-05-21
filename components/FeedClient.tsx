@@ -273,6 +273,8 @@ export default function FeedClient({ initialListings }: Props) {
             <a href="/how-it-works" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>How it works</a>
             <a href="/deal-guide" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Deal guide</a>
             <a href="/feedback" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feedback</a>
+            <a href="/privacy" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Privacy</a>
+            <a href="/tos" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Terms</a>
           </div>
         </div>
       </footer>
