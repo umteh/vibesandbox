@@ -196,7 +196,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
       </div>
 
       <footer style={{ borderTop: '1px solid var(--border)', background: '#fff', padding: 24, textAlign: 'center' }}>
-        <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox · AI curation · No payment processing · </span>
+        <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox · </span>
         <Link href="/how-it-works" style={{ fontSize: 12, color: 'var(--text3)' }}>How it works</Link>
       </footer>
     </div>

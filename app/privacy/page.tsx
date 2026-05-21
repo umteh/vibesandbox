@@ -78,7 +78,7 @@ export default function PrivacyPage() {
 
       <footer style={{ borderTop: '2px solid var(--border2)', background: 'var(--bg2)', padding: 24 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox · AI curation · No payment processing</span>
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox</span>
           <div style={{ display: 'flex', gap: 16 }}>
             <a href="/tos" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Terms</a>
             <a href="/feed" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feed</a>
