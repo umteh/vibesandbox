@@ -3,6 +3,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createAdminClient } from '@/lib/supabase/server';
 import { fetchAppData } from '@/lib/fetch-app-data';
 
+// Allow up to 60s on Vercel Pro; free tier is capped at 10s regardless
+export const maxDuration = 60;
+
 // ─── Scoring rubric ───────────────────────────────────────────────────────────
 const RUBRIC = `
 You are an expert app marketplace analyst evaluating apps for acquisition potential.
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
       const fullUrl = url.startsWith('http') ? url : `https://${url}`;
       const res = await fetch(
         `https://api.microlink.io/?url=${encodeURIComponent(fullUrl)}&screenshot=true&meta=false&embed=screenshot.url`,
-        { signal: AbortSignal.timeout(20_000) }
+        { signal: AbortSignal.timeout(10_000) }
       );
       if (res.ok) {
         const buf = await res.arrayBuffer();

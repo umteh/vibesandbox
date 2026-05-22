@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 
+export const maxDuration = 30;
+
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_DAYS = 7;
 
