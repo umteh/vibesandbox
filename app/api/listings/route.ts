@@ -74,8 +74,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Build creator display name / initials from user metadata or email
+  // Build creator display name — prefer user's custom display_name from profiles
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('display_name')
+    .eq('id', user.id)
+    .single();
   const displayName =
+    profile?.display_name ||
     (user.user_metadata?.full_name as string) ||
     (user.user_metadata?.name as string) ||
     user.email?.split('@')[0] ||
