@@ -68,18 +68,6 @@ export default function Nav({ user, search, onSearchChange, onSignIn, onSignUp, 
           <img src="/img/logo.png" alt="VibeSandbox" style={{ height: 25, width: 'auto', display: 'block' }} />
         </div>
 
-        <div style={{ flex: 1, maxWidth: 380, position: 'relative' }}>
-          <svg style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-          </svg>
-          <input
-            placeholder="Search apps…"
-            value={search}
-            onChange={e => onSearchChange(e.target.value)}
-            style={{ width: '100%', padding: '7px 12px 7px 30px', border: '2px solid var(--border)', borderRadius: 4, fontSize: 13, outline: 'none', background: 'oklch(1 0 0 / 0.6)' }}
-          />
-        </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
           {!user ? (
             <>

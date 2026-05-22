@@ -266,9 +266,7 @@ export default function FeedClient({ initialListings }: Props) {
       </div>
 
       <footer style={{ borderTop: '2px solid var(--border2)', background: 'var(--bg2)', padding: 24 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 700 }}>VibeSandbox</span>
-          <span style={{ fontSize: 12, color: 'var(--text3)' }}>VibeSandbox</span>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <div style={{ display: 'flex', gap: 16 }}>
             <a href="/how-it-works" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>How it works</a>
             <a href="/deal-guide" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Deal guide</a>
