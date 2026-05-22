@@ -46,17 +46,24 @@ export default function FeedClient({ initialListings }: Props) {
     const sb = getSb();
 
     // Auth state
-    sb.auth.getUser().then(({ data }: { data: { user: { id: string; email?: string } | null } }) => {
+    sb.auth.getUser().then(async ({ data }: { data: { user: { id: string; email?: string } | null } }) => {
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser(data.user.email?.split('@')[0] ?? 'user');
+        const fallback = data.user.email?.split('@')[0] ?? 'user';
+        setUser(fallback);
+        // Fetch display name from profiles
+        const { data: profile } = await sb.from('profiles').select('display_name').eq('id', data.user.id).single();
+        if (profile?.display_name) setUser(profile.display_name);
       }
     });
     const { data: { subscription } } = sb.auth.onAuthStateChange(
       (_event: string, session: { user: { id: string; email?: string } } | null) => {
         if (session?.user) {
           setSupabaseUser(session.user);
-          setUser(session.user.email?.split('@')[0] ?? 'user');
+          const fallback = session.user.email?.split('@')[0] ?? 'user';
+          setUser(fallback);
+          sb.from('profiles').select('display_name').eq('id', session.user.id).single()
+            .then(({ data: p }) => { if (p?.display_name) setUser(p.display_name); });
         } else {
           setSupabaseUser(null);
           setUser(null);
