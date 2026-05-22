@@ -11,25 +11,28 @@ export async function PATCH(req: NextRequest) {
   if (!display_name?.trim()) return NextResponse.json({ error: 'Display name is required' }, { status: 422 });
 
   const admin = createAdminClient();
-  const { error, data: updated } = await admin
+
+  // Fetch existing profile to preserve email_encrypted
+  const { data: existing } = await admin
     .from('profiles')
-    .update({ display_name: display_name.trim() })
+    .select('email_encrypted')
     .eq('id', user.id)
-    .select('id');
+    .single();
 
-  if (error) {
-    console.error('[profile] update failed:', error);
-    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
-  }
+  const emailEnc = existing?.email_encrypted
+    ?? (user.email ? encryptEmail(user.email) : '');
 
-  // No profile row yet — create it (user signed up before profile system existed)
-  if (!updated || updated.length === 0) {
-    const emailEnc = user.email ? encryptEmail(user.email) : '';
-    await admin.from('profiles').upsert({
+  const { error } = await admin
+    .from('profiles')
+    .upsert({
       id: user.id,
       display_name: display_name.trim(),
       email_encrypted: emailEnc,
-    }, { onConflict: 'id', ignoreDuplicates: false });
+    }, { onConflict: 'id' });
+
+  if (error) {
+    console.error('[profile] upsert failed:', error);
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
 
   // Also update listings so creator_name reflects the new display name
