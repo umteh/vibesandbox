@@ -63,7 +63,7 @@ export default function FeedClient({ initialListings }: Props) {
           const fallback = session.user.email?.split('@')[0] ?? 'user';
           setUser(fallback);
           sb.from('profiles').select('display_name').eq('id', session.user.id).single()
-            .then(({ data: p }) => { if (p?.display_name) setUser(p.display_name); });
+            .then(({ data: p }: { data: { display_name: string } | null }) => { if (p?.display_name) setUser(p.display_name); });
         } else {
           setSupabaseUser(null);
           setUser(null);
