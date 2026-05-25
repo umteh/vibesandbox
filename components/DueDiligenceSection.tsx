@@ -3,7 +3,6 @@
 import { ListingMetadata } from '@/lib/metadata';
 import TagInput from './TagInput';
 
-const AI_MODELS = ['GPT-4o', 'GPT-4', 'Claude 3.5', 'Claude 3', 'Gemini 1.5', 'Llama 3', 'Mistral', 'Mixtral', 'DALL-E 3', 'Whisper', 'Stable Diffusion', 'Midjourney', 'Cohere', 'Anthropic'];
 const INFRA = ['Next.js', 'React', 'Node.js', 'Python', 'FastAPI', 'Supabase', 'PostgreSQL', 'Redis', 'Pinecone', 'Weaviate', 'Chroma', 'LangChain', 'LlamaIndex', 'Vercel', 'AWS', 'GCP', 'Stripe', 'Resend'];
 
 const MAINTENANCE_OPTIONS = [
@@ -50,17 +49,6 @@ export default function DueDiligenceSection({ value = {}, onChange }: Props) {
           Tech Stack
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text3)', marginBottom: 6 }}>
-              AI Foundation — models powering the product
-            </label>
-            <TagInput
-              tags={value.tech_stack?.foundation ?? []}
-              onChange={t => setStack({ foundation: t })}
-              placeholder="GPT-4o, Claude 3.5…"
-              suggestions={AI_MODELS}
-            />
-          </div>
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text3)', marginBottom: 6 }}>
               Infrastructure — frameworks, DBs, hosting
