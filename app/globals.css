@@ -68,6 +68,7 @@ input, textarea, select { font-family: inherit; }
 @keyframes barFill   { from { transform: scaleX(0) } to { transform: scaleX(1) } }
 @keyframes pop       { 0% { transform: scale(0.7); opacity: 0 } 70% { transform: scale(1.08) } 100% { transform: scale(1); opacity: 1 } }
 @keyframes shimmer   { 0% { background-position: -200% center } 100% { background-position: 200% center } }
+@keyframes blink     { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
 
 .animate-slide-up   { animation: slideUp 0.2s ease; }
 .animate-spin       { animation: spin 0.8s linear infinite; }

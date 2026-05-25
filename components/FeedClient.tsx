@@ -171,7 +171,6 @@ export default function FeedClient({ initialListings }: Props) {
           <img
             src="/img/robot coding.png"
             alt="AI robot coding"
-            className="animate-float"
             style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }}
           />
           <div style={{
@@ -188,7 +187,11 @@ export default function FeedClient({ initialListings }: Props) {
             lineHeight: 1.05, marginBottom: 16, textWrap: 'balance',
             animation: 'fadeUp 0.5s ease 0.2s both',
           } as React.CSSProperties}>
-            Where builders<br />find buyers
+            Where builders<br />find buyers<span style={{
+              display: 'inline-block', width: '3px', height: '0.7em',
+              background: 'var(--ink)', marginLeft: '4px', verticalAlign: '-0.05em',
+              animation: 'blink 1s step-start infinite',
+            }} />
           </h1>
           <p style={{
             fontSize: 14, color: 'var(--text2)', lineHeight: 1.7,

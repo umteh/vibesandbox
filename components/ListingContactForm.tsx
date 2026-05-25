@@ -12,8 +12,8 @@ type State = 'idle' | 'sending' | 'sent' | 'duplicate' | 'error';
 
 export default function ListingContactForm({ listing }: Props) {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const [prefilled, setPrefilled] = useState(false);
   const [state, setState] = useState<State>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
@@ -24,7 +24,6 @@ export default function ListingContactForm({ listing }: Props) {
     sb.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const email = data.user.email ?? '';
-      // Try to get display_name from profile
       const { data: profile } = await sb
         .from('profiles')
         .select('display_name')
@@ -36,10 +35,8 @@ export default function ListingContactForm({ listing }: Props) {
         name: f.name || name,
         email: f.email || email,
       }));
-      setPrefilled(true);
     });
   }, []);
-  const [errorMsg, setErrorMsg] = useState('');
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,18 +94,11 @@ export default function ListingContactForm({ listing }: Props) {
 
   return (
     <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+      <div style={{ marginBottom: 4 }}>
         <div style={{ fontSize: 15, fontWeight: 700 }}>Contact Seller</div>
-        {prefilled && (
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--green)', background: 'var(--green-light)', padding: '2px 8px', borderRadius: 4 }}>
-            pre-filled from account
-          </span>
-        )}
       </div>
       <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>
-        {prefilled
-          ? 'Your message is relayed once to the seller\'s email. The link expires in 24h.'
-          : 'No login required. Your message is relayed once to the seller\'s email. The link expires in 24h.'}
+        No login required. Your message is relayed once to the seller&apos;s email. The link expires in 24h.
       </p>
 
       {state === 'duplicate' && (
