@@ -12,15 +12,7 @@ export async function PATCH(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  // Fetch existing profile to preserve email_encrypted
-  const { data: existing } = await admin
-    .from('profiles')
-    .select('email_encrypted')
-    .eq('id', user.id)
-    .single();
-
-  const emailEnc = existing?.email_encrypted
-    ?? (user.email ? encryptEmail(user.email) : '');
+  const emailEnc = user.email ? encryptEmail(user.email) : '';
 
   const { error } = await admin
     .from('profiles')
