@@ -173,6 +173,7 @@ export default function FeedClient({ initialListings }: Props) {
             alt="AI robot coding"
             style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }}
           />
+          {/* TODO: re-enable once more listings are scored
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px',
             borderRadius: 4, background: 'var(--accent)', border: '2px solid var(--ink)',
@@ -182,6 +183,7 @@ export default function FeedClient({ initialListings }: Props) {
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{scored} apps scored by AI</span>
           </div>
+          */}
           <h1 style={{
             fontSize: 'clamp(40px, 6vw, 64px)', fontWeight: 900, letterSpacing: '-0.04em',
             lineHeight: 1.05, marginBottom: 16, textWrap: 'balance',
@@ -198,7 +200,10 @@ export default function FeedClient({ initialListings }: Props) {
             maxWidth: 480, margin: '0 auto 28px',
             animation: 'fadeUp 0.45s ease 0.35s both',
           }}>
-            Turn your hackathon project into cash in a few clicks
+            Turn your hackathon project into{' '}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/img/cash.png" alt="cash" style={{ height: '3.3em', width: 'auto', display: 'inline-block', verticalAlign: 'middle', margin: '-10px -4px 0' }} />
+            {' '}in a few clicks
           </p>
         </div>
       </div>
