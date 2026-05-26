@@ -34,8 +34,8 @@ components/
   ScoreBadge.tsx      # Score display with pop animation
   DimBar.tsx          # Horizontal score bar (detail page)
   AppScreenPlaceholder.tsx # Screenshot or placeholder (no phone frame)
-  PitchSection.tsx    # Hook, AI secret sauce, MAU/MRR
-  DueDiligenceSection.tsx  # Tech stack, burn, maintenance, assets
+  PitchSection.tsx    # Hook, MAU/MRR (AI Secret Sauce field removed)
+  DueDiligenceSection.tsx  # Infrastructure stack, burn, maintenance, assets (AI Foundation field removed)
   AuthModal.tsx       # Sign in / sign up (Supabase)
 
 lib/
@@ -71,7 +71,7 @@ Old dimensions (`ai_integration`, `polish`, `novelty`) exist in `DIMENSION_LABEL
 
 **Screenshot service:** microlink.io (free tier, 50 req/day). Stored in Supabase Storage `screenshots` bucket.
 
-**Email relay:** Resend. Buyer messages forwarded once to seller email. Token expires 24h. No conversations stored.
+**Email relay:** Resend. Buyer messages forwarded once to seller email. Token expires 24h. No conversations stored. Seller email is AES-256-GCM encrypted in `profiles.email_encrypted` using `EMAIL_ENCRYPTION_KEY`. Profile PATCH always re-encrypts with the current key — so after a key rotation, sellers just need to save their display name once.
 
 **Internal API calls:** Protected by `INTERNAL_SECRET` header. Score-listing uses `NEXT_PUBLIC_SITE_URL ?? VERCEL_URL ?? localhost:3000` so it works on preview deployments too.
 
@@ -92,7 +92,9 @@ Each has a color pair in `CATEGORY_COLORS` (lib/data.ts) used for card placehold
 - **Style:** Neo-brutalist — hard 2px ink borders, offset box-shadows, no border-radius on interactive elements
 - **Accent:** Lime green `oklch(0.88 0.19 128)`
 - **Colors:** OKLCH color space, defined as CSS variables in `app/globals.css`
-- **Animations:** `floatY` (robot), `cardEnter` (stagger by index), `barFill` (breakdown bars), `pop` (score badge), `fadeUp` (hero sections)
+- **Logo:** `public/img/logo-new.png` (40px height in nav). Old logo kept at `logo.png`.
+- **Animations:** `cardEnter` (stagger by index), `barFill` (breakdown bars), `pop` (score badge), `fadeUp` (hero sections), `blink` (terminal cursor in hero H1). Robot float animation disabled.
+- **Hero:** Blinking terminal cursor after "find buyers". Cash image (`public/img/cash.png`) inline in subheadline. "X apps scored" badge commented out until listing count grows.
 - **Touch targets:** Filter buttons min 32px, nav buttons 31–37px
 
 ---
@@ -107,6 +109,10 @@ SUPABASE_SERVICE_ROLE_KEY     # Supabase service role (server only)
 GOOGLE_AI_API_KEY             # Gemini 2.5 Flash
 INTERNAL_SECRET               # Shared secret for internal API calls
 RESEND_API_KEY                # Email relay
+RESEND_FROM_DOMAIN            # Verified Resend domain (e.g. vibesandbox.store)
+EMAIL_ENCRYPTION_KEY          # 64-char hex, AES-256-GCM key for seller email encryption
+                              # Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+                              # WARNING: changing this key breaks existing encrypted emails in DB
 ```
 
 `VERCEL_URL` is set automatically by Vercel — no manual config needed.
@@ -119,7 +125,7 @@ RESEND_API_KEY                # Email relay
 |---|---|
 | `/` | Redirects to `/feed` |
 | `/feed` | Main marketplace feed |
-| `/listings/[id]` | Listing detail with AI critique and score breakdown |
+| `/listings/[id]` | Listing detail with AI critique and score breakdown. Full OG/Twitter meta tags for social sharing. |
 | `/how-it-works` | Explainer: 4 steps, scoring rubric with tier details, calibration examples, FAQ |
 | `/deal-guide` | Buyer/seller guide: 6-step process, seller checklist, buyer Q1–Q8, red flags |
 
