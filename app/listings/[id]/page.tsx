@@ -37,9 +37,30 @@ async function getListing(id: string): Promise<Listing | null> {
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const listing = await getListing(params.id);
   if (!listing) return { title: 'Not found — VibeSandbox' };
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vibesandbox.store';
+  const url = `${siteUrl}/listings/${params.id}`;
+  const title = `${listing.title} — VibeSandbox`;
+  const description = listing.tagline || `${listing.title} is listed for sale on VibeSandbox.`;
+  const image = listing.screenshotUrl ?? `${siteUrl}/img/og-default.png`;
+
   return {
-    title: `${listing.title} — VibeSandbox`,
-    description: listing.tagline,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'VibeSandbox',
+      images: [{ url: image, width: 1200, height: 630, alt: listing.title }],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
