@@ -198,7 +198,7 @@ export default function FeedClient({ initialListings }: Props) {
             maxWidth: 480, margin: '0 auto 28px',
             animation: 'fadeUp 0.45s ease 0.35s both',
           }}>
-            Every listing scored by AI across 5 dimensions. Builders sell. Buyers discover.
+            Turn your hackathon project into cash in a few clicks
           </p>
         </div>
       </div>
