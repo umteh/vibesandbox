@@ -14,6 +14,14 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient();
 
+  // Reset any listings stuck in 'scoring' for > 10 min back to pending
+  const stuckCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  await admin
+    .from('listings')
+    .update({ status: 'pending' })
+    .eq('status', 'scoring')
+    .lt('updated_at', stuckCutoff);
+
   const { data: pending, error } = await admin
     .from('listings')
     .select('id, url, description, platform')
