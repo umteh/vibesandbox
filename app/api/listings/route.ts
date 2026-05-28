@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 
 export const maxDuration = 30;
@@ -131,13 +132,15 @@ export async function POST(req: NextRequest) {
     ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000';
 
-  // Fire-and-forget: score the listing (captures screenshot + calls GPT-4o)
+  // Fire-and-forget: score the listing (captures screenshot + calls Gemini)
   if (process.env.INTERNAL_SECRET) {
-    fetch(`${baseUrl}/api/score-listing`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
-      body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
-    }).catch(err => console.error('[listings] score-listing fire-and-forget failed:', err));
+    waitUntil(
+      fetch(`${baseUrl}/api/score-listing`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
+        body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
+      }).catch(err => console.error('[listings] score-listing fire-and-forget failed:', err))
+    );
   }
 
   return NextResponse.json(listing, { status: 201 });
