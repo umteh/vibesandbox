@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { CATEGORIES, Listing } from '@/lib/data';
 import { ListingMetadata } from '@/lib/metadata';
 import PitchSection from './PitchSection';
@@ -40,7 +39,6 @@ function detectPlatform(url: string): Platform | null {
 }
 
 export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUserId }: Props) {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>({
     title: '', url: '', description: '', category: 'Productivity', platform: 'web',
@@ -100,11 +98,6 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
   }
 
   // Called from step 3 — actual API submission
-  function goToListing() {
-    onClose();
-    router.push(`/listings/${createdId}`);
-  }
-
   async function doSubmit(includeMetadata: boolean): Promise<boolean> {
     setSubmitting(true);
     setError(null);
@@ -139,8 +132,6 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
       if (!res.ok) { setError(data.error ?? 'Submission failed. Try again.'); return false; }
 
       setCreatedId(data.id);
-      // Auto-redirect to listing page after short delay
-      setTimeout(() => { onClose(); router.push(`/listings/${data.id}`); }, 1500);
       onSubmitListing({
         id: data.id,
         title: form.title,
@@ -190,11 +181,10 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
             <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>✓</div>
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Listing submitted!</div>
             <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 8 }}>
-              Taking you to your listing…
+              Your listing is live with a &ldquo;Scoring…&rdquo; badge. Share the link — AI scoring runs in the background.
             </p>
-            <p style={{ fontSize: 12, color: 'var(--text3)' }}>AI scoring runs in the background — usually under 5 minutes.</p>
-            <button onClick={goToListing}
-              style={{ marginTop: 24, padding: '10px 24px', background: 'var(--blue)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>
+            <p style={{ fontSize: 12, color: 'var(--text3)' }}>Score typically arrives within 5 minutes.</p>
+            <button onClick={onClose} style={{ marginTop: 24, padding: '10px 24px', background: 'var(--blue)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>
               View listing →
             </button>
           </div>
