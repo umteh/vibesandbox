@@ -146,9 +146,7 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
           description: form.description,
           platform: form.platform,
         }),
-      })
-        .then(r => console.log('[score-listing] status:', r.status, 'listing:', data.id))
-        .catch(err => console.error('[score-listing] fetch error:', err));
+      }).catch(() => {});
 
       onSubmitListing({
         id: data.id,
