@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { waitUntil } from '@vercel/functions';
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 
 export const maxDuration = 30;
@@ -132,18 +131,17 @@ export async function POST(req: NextRequest) {
     ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000';
 
-  // Fire-and-forget: score the listing (captures screenshot + calls Gemini)
+  // Kick off scoring — non-blocking
   if (process.env.INTERNAL_SECRET) {
-    console.log(`[listings] firing score-listing for ${listing.id} via ${baseUrl}`);
-    waitUntil(
-      fetch(`${baseUrl}/api/score-listing`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
-        body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
-      })
-        .then(res => console.log(`[listings] score-listing responded ${res.status} for ${listing.id}`))
-        .catch(err => console.error('[listings] score-listing fire-and-forget failed:', err))
-    );
+    const scoreUrl = `${baseUrl}/api/score-listing`;
+    console.log(`[listings] kicking off scoring for ${listing.id} → ${scoreUrl}`);
+    fetch(scoreUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
+      body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
+    })
+      .then(res => console.log(`[listings] score-listing responded ${res.status} for ${listing.id}`))
+      .catch(err => console.error(`[listings] score-listing failed for ${listing.id}:`, err));
   } else {
     console.warn('[listings] INTERNAL_SECRET not set — scoring skipped');
   }
