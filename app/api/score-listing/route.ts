@@ -74,6 +74,10 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
+  // Mark as 'scoring' immediately — lets us confirm the function was actually called
+  await admin.from('listings').update({ status: 'scoring' }).eq('id', listing_id);
+  console.log(`[score-listing] started for ${listing_id}`);
+
   // ── Fetch enriched app data (store metadata / web meta) ──────────────────
   const [appData] = await Promise.allSettled([
     fetchAppData(url, platform ?? 'web'),

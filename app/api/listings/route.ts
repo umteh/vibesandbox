@@ -134,13 +134,18 @@ export async function POST(req: NextRequest) {
 
   // Fire-and-forget: score the listing (captures screenshot + calls Gemini)
   if (process.env.INTERNAL_SECRET) {
+    console.log(`[listings] firing score-listing for ${listing.id} via ${baseUrl}`);
     waitUntil(
       fetch(`${baseUrl}/api/score-listing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
         body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
-      }).catch(err => console.error('[listings] score-listing fire-and-forget failed:', err))
+      })
+        .then(res => console.log(`[listings] score-listing responded ${res.status} for ${listing.id}`))
+        .catch(err => console.error('[listings] score-listing fire-and-forget failed:', err))
     );
+  } else {
+    console.warn('[listings] INTERNAL_SECRET not set — scoring skipped');
   }
 
   return NextResponse.json(listing, { status: 201 });
