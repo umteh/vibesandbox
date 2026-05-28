@@ -8,7 +8,7 @@ import ListingCard from './ListingCard';
 import SubmitModal from './SubmitModal';
 import AuthModal from './AuthModal';
 
-type SortKey = 'score' | 'newest' | 'price';
+type SortKey = 'score' | 'price';
 
 interface Props {
   initialListings: Listing[];
@@ -139,7 +139,6 @@ export default function FeedClient({ initialListings }: Props) {
   });
 
   if (sort === 'score') filtered = [...filtered].sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  if (sort === 'newest') filtered = [...filtered].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   if (sort === 'price') filtered = [...filtered].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
 
   const scored = listings.filter(l => l.status === 'scored').length;
@@ -230,7 +229,7 @@ export default function FeedClient({ initialListings }: Props) {
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)' }}>Sort:</span>
-            {([['score', 'AI Score'], ['newest', 'Newest'], ['price', 'Price']] as const).map(([v, l]) => (
+            {([['score', 'AI Score'], ['price', 'Price']] as const).map(([v, l]) => (
               <button key={v} onClick={() => setSort(v)} style={{
                 padding: '5px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700, minHeight: 30,
                 background: sort === v ? 'var(--accent)' : 'transparent',
