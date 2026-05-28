@@ -279,14 +279,17 @@ export default function FeedClient({ initialListings }: Props) {
         )}
       </div>
 
-      <footer style={{ borderTop: '2px solid var(--border2)', background: 'var(--bg2)', padding: 24 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <div style={{ display: 'flex', gap: 16 }}>
-            <a href="/how-it-works" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>How it works</a>
-            <a href="/deal-guide" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Deal guide</a>
-            <a href="/feedback" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Feedback</a>
-            <a href="/privacy" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Privacy</a>
-            <a href="/tos" style={{ fontSize: 12, color: 'var(--text3)', textDecoration: 'none' }}>Terms</a>
+      <footer style={{ borderTop: '2px solid var(--ink)', background: 'var(--ink)', padding: '32px 24px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.02em' }}>VibeSandbox</span>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            {[['How it works', '/how-it-works'], ['Deal guide', '/deal-guide'], ['Feedback', '/feedback'], ['Privacy', '/privacy'], ['Terms', '/tos']].map(([label, href]) => (
+              <a key={href} href={href} style={{ fontSize: 13, color: 'oklch(0.75 0.01 80)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'oklch(0.75 0.01 80)')}>
+                {label}
+              </a>
+            ))}
           </div>
         </div>
       </footer>
