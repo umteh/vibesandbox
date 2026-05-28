@@ -22,11 +22,22 @@ export async function GET(req: NextRequest) {
           data.user.email?.split('@')[0] ||
           'Anonymous';
 
-        await admin.from('profiles').upsert({
-          id: data.user.id,
-          display_name: displayName,
-          email_encrypted: emailEnc,
-        }, { onConflict: 'id', ignoreDuplicates: false });
+        // Insert on first login; on subsequent logins only refresh email_encrypted.
+        // display_name is intentionally excluded from the update so user changes persist.
+        const { data: existing } = await admin
+          .from('profiles').select('id').eq('id', data.user.id).single();
+
+        if (existing) {
+          await admin.from('profiles')
+            .update({ email_encrypted: emailEnc })
+            .eq('id', data.user.id);
+        } else {
+          await admin.from('profiles').insert({
+            id: data.user.id,
+            display_name: displayName,
+            email_encrypted: emailEnc,
+          });
+        }
       } catch (err) {
         // Non-fatal: log and continue. Relay won't work for this user until fixed.
         console.error('[auth/callback] profile upsert failed:', err);
