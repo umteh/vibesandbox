@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase/server';
 import { fetchAppData } from '@/lib/fetch-app-data';
 
 // Allow up to 60s on Vercel Pro; free tier is capped at 10s regardless
@@ -54,10 +54,6 @@ function calcScore(b: Record<string, number>): number {
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-internal-secret');
-  if (!process.env.INTERNAL_SECRET || secret !== process.env.INTERNAL_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   if (!process.env.GOOGLE_AI_API_KEY) {
     return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured' }, { status: 503 });
   }
@@ -73,6 +69,18 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createAdminClient();
+
+  // Auth: INTERNAL_SECRET (cron/server) OR authenticated listing owner (browser client)
+  const secret = req.headers.get('x-internal-secret');
+  const isInternal = !!process.env.INTERNAL_SECRET && secret === process.env.INTERNAL_SECRET;
+  if (!isInternal) {
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { data: owns } = await admin
+      .from('listings').select('id').eq('id', listing_id).eq('user_id', user.id).single();
+    if (!owns) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   // Mark as 'scoring' immediately — lets us confirm the function was actually called
   await admin.from('listings').update({ status: 'scoring' }).eq('id', listing_id);

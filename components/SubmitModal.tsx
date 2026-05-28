@@ -132,6 +132,22 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
       if (!res.ok) { setError(data.error ?? 'Submission failed. Try again.'); return false; }
 
       setCreatedId(data.id);
+
+      // Trigger scoring from the browser — keepalive ensures the request
+      // survives even if the user navigates away before scoring completes.
+      fetch('/api/score-listing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        keepalive: true,
+        body: JSON.stringify({
+          listing_id: data.id,
+          url: form.url,
+          description: form.description,
+          platform: form.platform,
+        }),
+      }).catch(() => {}); // silent — daily cron is the fallback
+
       onSubmitListing({
         id: data.id,
         title: form.title,

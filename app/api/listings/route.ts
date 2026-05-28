@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { waitUntil } from '@vercel/functions';
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 
 export const maxDuration = 30;
@@ -126,28 +125,8 @@ export async function POST(req: NextRequest) {
   // Record in submission log
   await admin.from('submission_log').insert({ user_id: user.id, listing_id: listing.id });
 
-  // Use VERCEL_URL for internal server-to-server calls — avoids ECONNRESET
-  // when calling the external domain (vibesandbox.store) from within Vercel.
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
-
-  // Kick off scoring — kept alive via waitUntil so Vercel doesn't kill the request before it dispatches
-  if (process.env.INTERNAL_SECRET) {
-    const scoreUrl = `${baseUrl}/api/score-listing`;
-    console.log(`[listings] kicking off scoring for ${listing.id} → ${scoreUrl}`);
-    waitUntil(
-      fetch(scoreUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.INTERNAL_SECRET },
-        body: JSON.stringify({ listing_id: listing.id, url: listing.url, description: listing.description, platform: listing.platform }),
-      })
-        .then(res => console.log(`[listings] score-listing responded ${res.status} for ${listing.id}`))
-        .catch(err => console.error(`[listings] score-listing failed for ${listing.id}:`, err))
-    );
-  } else {
-    console.warn('[listings] INTERNAL_SECRET not set — scoring skipped');
-  }
+  // Scoring is triggered client-side by SubmitModal after it receives this 201 response.
+  // The browser fetch (with keepalive:true) reliably outlives the server function.
 
   return NextResponse.json(listing, { status: 201 });
 }
