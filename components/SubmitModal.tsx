@@ -448,10 +448,13 @@ export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUs
                     style={{ flex: 1, padding: 11, border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, fontWeight: 500, color: 'var(--text2)', background: 'var(--bg)' }}>
                     ← Back
                   </button>
-                  <button type="button" onClick={() => setStep(3)} style={{
-                    flex: 2, padding: 11, background: 'var(--blue)', color: '#fff', borderRadius: 8,
-                    fontSize: 14, fontWeight: 600,
-                  }}>
+                  <button type="button" onClick={() => setStep(3)}
+                    disabled={form.priceType === 'fixed' && !form.price}
+                    style={{
+                      flex: 2, padding: 11, background: 'var(--blue)', color: '#fff', borderRadius: 8,
+                      fontSize: 14, fontWeight: 600,
+                      opacity: form.priceType === 'fixed' && !form.price ? 0.4 : 1,
+                    }}>
                     Next →
                   </button>
                 </div>
