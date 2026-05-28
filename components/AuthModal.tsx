@@ -123,6 +123,8 @@ export default function AuthModal({ mode, onClose, onToggle, onAuth }: Props) {
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text2)', marginBottom: 4 }}>{ph}</label>
                 <input
                   type={type}
+                  name={id}
+                  autoComplete={id === 'email' ? 'email' : mode === 'signup' ? 'new-password' : 'current-password'}
                   required
                   placeholder={ph}
                   value={form[id]}
