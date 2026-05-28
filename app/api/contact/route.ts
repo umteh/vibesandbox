@@ -56,16 +56,16 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (existing) {
-    // Token exists — check expiry before deciding response
     const expired = new Date(existing.expires_at) < new Date();
     if (expired) {
-      return NextResponse.json({ error: 'This contact link has expired.' }, { status: 410 });
-    }
-    if (existing.forwarded_at) {
+      // Expired token — delete it so a fresh one can be created below
+      await admin.from('relay_tokens').delete().eq('id', existing.id);
+    } else if (existing.forwarded_at) {
       return NextResponse.json({ message: 'Your message was already sent.' }, { status: 200 });
+    } else {
+      // Token exists, not expired, not yet forwarded — attempt to forward now
+      return forwardRelay(admin, existing.id, listing, buyer_name, buyer_email, message);
     }
-    // Token exists but not yet forwarded — attempt to forward now
-    return forwardRelay(admin, existing.id, listing, buyer_name, buyer_email, message);
   }
 
   // Create new relay token (expires in 24h)
