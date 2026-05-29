@@ -23,9 +23,9 @@ interface Props {
 export default function ListingMetadataDisplay({ metadata }: Props) {
   const { pitch, due_diligence: dd, notes } = metadata;
   const hasContent =
-    pitch?.hook || pitch?.secret_sauce || pitch?.mau || pitch?.mrr ||
+    pitch?.hook || pitch?.secret_sauce || pitch?.mau != null || pitch?.mrr != null ||
     dd?.tech_stack?.foundation?.length || dd?.tech_stack?.infrastructure?.length ||
-    dd?.monthly_burn || dd?.maintenance_level ||
+    dd?.monthly_burn != null || dd?.maintenance_level ||
     Object.values(dd?.assets_included ?? {}).some(Boolean) ||
     notes;
 
@@ -35,7 +35,7 @@ export default function ListingMetadataDisplay({ metadata }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 28 }}>
 
       {/* Pitch section */}
-      {(pitch?.hook || pitch?.secret_sauce || pitch?.mau || pitch?.mrr) && (
+      {(pitch?.hook || pitch?.secret_sauce || pitch?.mau != null || pitch?.mrr != null) && (
         <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>The Pitch</div>
 
@@ -65,9 +65,9 @@ export default function ListingMetadataDisplay({ metadata }: Props) {
             );
           })()}
 
-          {(pitch.mau || pitch.mrr) && (
+          {(pitch.mau != null || pitch.mrr != null) && (
             <div style={{ display: 'flex', gap: 16 }}>
-              {pitch.mau && (
+              {pitch.mau != null && (
                 <div style={{ padding: '10px 14px', background: '#fff', border: '1px solid var(--border)', borderRadius: 8 }}>
                   <div style={{ fontSize: 11, color: 'var(--text3)' }}>Monthly Active Users</div>
                   <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
@@ -75,7 +75,7 @@ export default function ListingMetadataDisplay({ metadata }: Props) {
                   </div>
                 </div>
               )}
-              {pitch.mrr && (
+              {pitch.mrr != null && (
                 <div style={{ padding: '10px 14px', background: '#fff', border: '1px solid var(--border)', borderRadius: 8 }}>
                   <div style={{ fontSize: 11, color: 'var(--text3)' }}>MRR</div>
                   <div style={{ fontSize: 20, fontWeight: 700, fontFamily: "'DM Mono', monospace", color: 'var(--green)' }}>
@@ -90,7 +90,7 @@ export default function ListingMetadataDisplay({ metadata }: Props) {
 
       {/* Due Diligence */}
       {(dd?.tech_stack?.foundation?.length || dd?.tech_stack?.infrastructure?.length ||
-        dd?.monthly_burn || dd?.maintenance_level ||
+        dd?.monthly_burn != null || dd?.maintenance_level ||
         Object.values(dd?.assets_included ?? {}).some(Boolean)) && (
         <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>Due Diligence</div>
@@ -123,9 +123,9 @@ export default function ListingMetadataDisplay({ metadata }: Props) {
             )}
 
             {/* Operations */}
-            {(dd?.monthly_burn || dd?.maintenance_level) && (
+            {(dd?.monthly_burn != null || dd?.maintenance_level) && (
               <div style={{ display: 'flex', gap: 12 }}>
-                {dd.monthly_burn && (
+                {dd.monthly_burn != null && (
                   <div style={{ padding: '10px 14px', background: '#fff', border: '1px solid var(--border)', borderRadius: 8 }}>
                     <div style={{ fontSize: 11, color: 'var(--text3)' }}>Monthly Burn</div>
                     <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>${dd.monthly_burn}/mo</div>
