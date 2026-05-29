@@ -98,7 +98,7 @@ export default function ListingContactForm({ listing }: Props) {
         <div style={{ fontSize: 15, fontWeight: 700 }}>Contact Seller</div>
       </div>
       <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>
-        No login required. Your message is relayed once to the seller&apos;s email. The link expires in 24h.
+        Seller replies directly to your email. One relay, then it&apos;s between you two.
       </p>
 
       {state === 'duplicate' && (
@@ -128,7 +128,7 @@ export default function ListingContactForm({ listing }: Props) {
             Message <span style={{ color: 'var(--red)' }}>*</span>
           </label>
           <textarea required rows={4}
-            placeholder={`Hi ${listing.creator}, I'm interested in ${listing.title}...`}
+            placeholder={`Hi, I'm interested in buying. My budget is around $X. Are you open to a call or can you share more details?`}
             value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
             style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', resize: 'vertical', background: '#fff' }} />
         </div>

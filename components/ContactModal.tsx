@@ -85,7 +85,7 @@ export default function ContactModal({ listing, onClose }: Props) {
 
             <form onSubmit={submit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ padding: '10px 14px', background: 'var(--bg2)', borderRadius: 8, fontSize: 12, color: 'var(--text2)', lineHeight: 1.6, borderLeft: '3px solid var(--border2)' }}>
-                No login required. Your message is relayed once to the seller&apos;s email. The link expires in 24h.
+                Seller replies directly to your email. One relay, then it&apos;s between you two.
               </div>
 
               {state === 'duplicate' && (
@@ -115,7 +115,7 @@ export default function ContactModal({ listing, onClose }: Props) {
                   Message <span style={{ color: 'var(--red)' }}>*</span>
                 </label>
                 <textarea required rows={4}
-                  placeholder={`Hi ${listing.creator}, I'm interested in ${listing.title}...`}
+                  placeholder={`Hi, I'm interested in buying. My budget is around $X. Are you open to a call or can you share more details?`}
                   value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                   style={{ width: '100%', padding: '9px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', resize: 'vertical', background: 'var(--bg)' }} />
               </div>
