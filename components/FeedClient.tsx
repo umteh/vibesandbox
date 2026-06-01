@@ -7,6 +7,7 @@ import Nav from './Nav';
 import ListingCard from './ListingCard';
 import SubmitModal from './SubmitModal';
 import AuthModal from './AuthModal';
+import EmailCapture from './EmailCapture';
 
 type SortKey = 'score' | 'price';
 
@@ -278,6 +279,8 @@ export default function FeedClient({ initialListings }: Props) {
           </div>
         )}
       </div>
+
+      <EmailCapture />
 
       <footer style={{ borderTop: '2px solid var(--ink)', background: 'var(--ink)', padding: '32px 24px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
