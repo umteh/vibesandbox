@@ -8,6 +8,7 @@ import ListingCard from './ListingCard';
 import SubmitModal from './SubmitModal';
 import AuthModal from './AuthModal';
 import EmailCapture from './EmailCapture';
+import ValuationBand from './ValuationBand';
 
 type SortKey = 'score' | 'price';
 
@@ -24,6 +25,7 @@ export default function FeedClient({ initialListings }: Props) {
 
 
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [submitInitialUrl, setSubmitInitialUrl] = useState('');
   const [auth, setAuth] = useState<'signin' | 'signup' | null>(null);
   const [user, setUser] = useState<string | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<{ id: string; email?: string } | null>(null);
@@ -208,6 +210,15 @@ export default function FeedClient({ initialListings }: Props) {
         </div>
       </div>
 
+      <ValuationBand onListThisApp={url => {
+        setSubmitInitialUrl(url);
+        if (user) {
+          setSubmitOpen(true);
+        } else {
+          setAuth('signup');
+        }
+      }} />
+
       {/* Filters */}
       <div style={{ borderBottom: '2px solid var(--border2)', background: 'var(--bg)', position: 'sticky', top: 56, zIndex: 40 }}>
         {/* Fade-out gradient on right edge signals horizontal scroll */}
@@ -299,10 +310,11 @@ export default function FeedClient({ initialListings }: Props) {
 
       {submitOpen && (
         <SubmitModal
-          onClose={() => setSubmitOpen(false)}
+          onClose={() => { setSubmitOpen(false); setSubmitInitialUrl(''); }}
           onSubmitListing={handleSubmitListing}
           user={user}
           supabaseUserId={supabaseUser?.id ?? null}
+          initialUrl={submitInitialUrl || undefined}
         />
       )}
       {auth && (

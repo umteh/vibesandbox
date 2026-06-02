@@ -25,6 +25,7 @@ interface Props {
   onSubmitListing: (listing: Partial<Listing>) => void;
   user: string | null;
   supabaseUserId: string | null;
+  initialUrl?: string;
 }
 
 function detectPlatform(url: string): Platform | null {
@@ -38,10 +39,11 @@ function detectPlatform(url: string): Platform | null {
   return null;
 }
 
-export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUserId }: Props) {
+export default function SubmitModal({ onClose, onSubmitListing, user, supabaseUserId, initialUrl }: Props) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>({
-    title: '', url: '', description: '', category: 'Productivity', platform: 'web',
+    title: '', url: initialUrl ?? '', description: '', category: 'Productivity',
+    platform: detectPlatform(initialUrl ?? '') ?? 'web',
     price: '', priceType: 'fixed', screenshotPreview: null, screenshotFile: null,
   });
   const [platformAutoDetected, setPlatformAutoDetected] = useState(false);
