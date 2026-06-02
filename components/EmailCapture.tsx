@@ -69,7 +69,7 @@ export default function EmailCapture() {
               whiteSpace: 'nowrap',
             }}
           >
-            {state === 'submitting' ? 'Subscribing…' : 'Notify me'}
+            {state === 'submitting' ? 'Subscribing…' : 'Sign up'}
           </button>
         </form>
         {state === 'error' && (
