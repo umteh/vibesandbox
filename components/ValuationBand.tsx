@@ -41,6 +41,7 @@ const CONFIDENCE_LABELS: Record<Confidence, string> = {
 
 export default function ValuationBand({ onListThisApp }: Props) {
   const [url, setUrl] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const [visitors, setVisitors] = useState('');
   const [mrr, setMrr] = useState('');
@@ -76,6 +77,11 @@ export default function ValuationBand({ onListThisApp }: Props) {
 
       const data = await res.json();
 
+      if (res.status === 429) {
+        setState('error');
+        setErrorMsg('Rate limit reached — 5 estimates per hour. Try again later.');
+        return;
+      }
       if (res.status === 422) {
         setState('error');
         setErrorMsg("Couldn't fetch app data — check the URL and try again.");
@@ -108,17 +114,17 @@ export default function ValuationBand({ onListThisApp }: Props) {
   return (
     <div style={{
       borderBottom: '2px solid var(--border2)',
-      background: 'var(--ink)',
+      background: 'var(--bg)',
       padding: '28px 24px',
     }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--accent)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--ink)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             What&apos;s your app worth?
           </span>
-          <span style={{ fontSize: 12, color: 'oklch(0.75 0.01 80)' }}>
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>
             Paste a URL — get a 30-second valuation
           </span>
         </div>
@@ -127,12 +133,13 @@ export default function ValuationBand({ onListThisApp }: Props) {
           /* ── Result state ── */
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--accent)', letterSpacing: '-0.03em' }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: 'var(--ink)', letterSpacing: '-0.03em' }}>
                 {formatCurrency(result.low)} – {formatCurrency(result.high)}
               </span>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '3px 10px',
-                border: '2px solid var(--accent)', color: 'var(--accent)',
+                border: '2px solid var(--ink)', color: 'var(--ink)',
+                boxShadow: '2px 2px 0px var(--ink)',
                 letterSpacing: '0.05em', textTransform: 'uppercase',
               }}>
                 {CONFIDENCE_LABELS[result.confidence]}
@@ -141,8 +148,8 @@ export default function ValuationBand({ onListThisApp }: Props) {
 
             <ul style={{ margin: '0 0 16px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
               {result.rationale.map((r, i) => (
-                <li key={i} style={{ fontSize: 12, color: 'oklch(0.8 0.01 80)', display: 'flex', gap: 8 }}>
-                  <span style={{ color: 'var(--accent)', flexShrink: 0 }}>→</span>
+                <li key={i} style={{ fontSize: 12, color: 'var(--text2)', display: 'flex', gap: 8 }}>
+                  <span style={{ color: 'var(--ink)', flexShrink: 0 }}>→</span>
                   <span>{r}</span>
                 </li>
               ))}
@@ -152,10 +159,10 @@ export default function ValuationBand({ onListThisApp }: Props) {
               <button
                 onClick={() => onListThisApp(url.trim())}
                 style={{
-                  padding: '10px 20px', background: 'var(--accent)', color: 'var(--ink)',
-                  border: '2px solid var(--accent)', fontSize: 13, fontWeight: 800,
+                  padding: '10px 20px', background: 'var(--ink)', color: 'var(--accent)',
+                  border: '2px solid var(--ink)', fontSize: 13, fontWeight: 800,
                   cursor: 'pointer', letterSpacing: '0.02em', whiteSpace: 'nowrap',
-                  boxShadow: '3px 3px 0px oklch(0.75 0.12 128)',
+                  boxShadow: '3px 3px 0px var(--border2)',
                 }}
               >
                 List this app →
@@ -163,8 +170,8 @@ export default function ValuationBand({ onListThisApp }: Props) {
               <button
                 onClick={reset}
                 style={{
-                  padding: '10px 16px', background: 'transparent', color: 'oklch(0.65 0.01 80)',
-                  border: '2px solid oklch(0.35 0.01 80)', fontSize: 12, fontWeight: 600,
+                  padding: '10px 16px', background: 'transparent', color: 'var(--text3)',
+                  border: '2px solid var(--border2)', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
@@ -177,11 +184,11 @@ export default function ValuationBand({ onListThisApp }: Props) {
           /* ── Loading state ── */
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 16, height: 16, border: '2px solid oklch(0.4 0.01 80)',
-              borderTopColor: 'var(--accent)', borderRadius: '50%',
+              width: 16, height: 16, border: '2px solid var(--border2)',
+              borderTopColor: 'var(--ink)', borderRadius: '50%',
               animation: 'spin 0.8s linear infinite',
             }} />
-            <span style={{ fontSize: 13, color: 'oklch(0.75 0.01 80)' }}>
+            <span style={{ fontSize: 13, color: 'var(--text2)' }}>
               Analyzing your app… (up to 15s for mobile apps)
             </span>
           </div>
@@ -190,29 +197,40 @@ export default function ValuationBand({ onListThisApp }: Props) {
           /* ── Idle / Error state ── */
           <div>
             <div style={{ display: 'flex', gap: 0 }}>
-              <input
-                type="text"
-                placeholder="myapp.com  or  App Store / Play Store URL"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                onBlur={handleUrlBlur}
-                onKeyDown={e => e.key === 'Enter' && estimate()}
-                style={{
-                  flex: 1, padding: '11px 14px',
-                  border: '2px solid oklch(0.35 0.01 80)',
-                  borderRight: 'none',
-                  borderRadius: 0, fontSize: 13,
-                  outline: 'none', background: 'oklch(0.12 0.01 80)',
-                  color: '#fff',
-                  fontFamily: 'inherit',
-                }}
-              />
+              <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="myapp.com  or  App Store / Play Store URL"
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => { setInputFocused(false); handleUrlBlur(); }}
+                  onKeyDown={e => e.key === 'Enter' && estimate()}
+                  style={{
+                    width: '100%', padding: '11px 14px',
+                    border: '2px solid var(--ink)',
+                    borderRight: 'none',
+                    borderRadius: 0, fontSize: 13,
+                    outline: 'none', background: '#fff',
+                    color: 'var(--ink)',
+                    fontFamily: 'inherit',
+                  }}
+                />
+                {!url && !inputFocused && (
+                  <span style={{
+                    position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                    display: 'inline-block', width: '2px', height: '1.1em',
+                    background: 'var(--ink)', pointerEvents: 'none',
+                    animation: 'blink 1s step-start infinite',
+                  }} />
+                )}
+              </div>
               <button
                 onClick={estimate}
                 disabled={!url.trim()}
                 style={{
-                  padding: '11px 20px', background: 'var(--accent)', color: 'var(--ink)',
-                  border: '2px solid var(--accent)', fontSize: 12, fontWeight: 800,
+                  padding: '11px 20px', background: 'var(--ink)', color: 'var(--accent)',
+                  border: '2px solid var(--ink)', fontSize: 12, fontWeight: 800,
                   cursor: url.trim() ? 'pointer' : 'default',
                   opacity: url.trim() ? 1 : 0.5,
                   letterSpacing: '0.02em', whiteSpace: 'nowrap',
@@ -223,14 +241,15 @@ export default function ValuationBand({ onListThisApp }: Props) {
               </button>
             </div>
 
+
             {/* Optional fields — revealed on URL blur */}
             {showOptional && (
               <div style={{ marginTop: 10, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 11, color: 'oklch(0.6 0.01 80)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 11, color: 'var(--text3)', fontWeight: 600, whiteSpace: 'nowrap' }}>
                   Add more details (optional):
                 </span>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'oklch(0.6 0.01 80)', whiteSpace: 'nowrap' }}>Monthly visitors</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>Monthly visitors</span>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -239,16 +258,16 @@ export default function ValuationBand({ onListThisApp }: Props) {
                     onChange={e => setVisitors(e.target.value)}
                     style={{
                       width: 90, padding: '5px 8px',
-                      border: '1px solid oklch(0.35 0.01 80)',
+                      border: '1px solid var(--border)',
                       borderRadius: 0, fontSize: 12,
-                      background: 'oklch(0.12 0.01 80)',
-                      color: '#fff', outline: 'none',
+                      background: '#fff',
+                      color: 'var(--ink)', outline: 'none',
                       fontFamily: 'inherit',
                     }}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'oklch(0.6 0.01 80)', whiteSpace: 'nowrap' }}>MRR $</span>
+                  <span style={{ fontSize: 11, color: 'var(--text3)', whiteSpace: 'nowrap' }}>MRR $</span>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -257,10 +276,10 @@ export default function ValuationBand({ onListThisApp }: Props) {
                     onChange={e => setMrr(e.target.value)}
                     style={{
                       width: 90, padding: '5px 8px',
-                      border: '1px solid oklch(0.35 0.01 80)',
+                      border: '1px solid var(--border)',
                       borderRadius: 0, fontSize: 12,
-                      background: 'oklch(0.12 0.01 80)',
-                      color: '#fff', outline: 'none',
+                      background: '#fff',
+                      color: 'var(--ink)', outline: 'none',
                       fontFamily: 'inherit',
                     }}
                   />
@@ -269,7 +288,7 @@ export default function ValuationBand({ onListThisApp }: Props) {
             )}
 
             {state === 'error' && (
-              <p style={{ marginTop: 8, fontSize: 12, color: 'oklch(0.75 0.15 25)' }}>{errorMsg}</p>
+              <p style={{ marginTop: 8, fontSize: 12, color: 'var(--red)' }}>{errorMsg}</p>
             )}
           </div>
         )}

@@ -162,7 +162,6 @@ export default function FeedClient({ initialListings }: Props) {
       {/* Hero */}
       <div style={{
         background: 'var(--bg)',
-        borderBottom: '2px solid var(--border2)',
         padding: '52px 24px 44px',
         textAlign: 'center',
         backgroundImage: 'radial-gradient(circle, oklch(0.55 0.008 260 / 0.06) 1px, transparent 1px)',
@@ -191,11 +190,7 @@ export default function FeedClient({ initialListings }: Props) {
             lineHeight: 1.05, marginBottom: 16, textWrap: 'balance',
             animation: 'fadeUp 0.5s ease 0.2s both',
           } as React.CSSProperties}>
-            Where builders<br />find buyers<span style={{
-              display: 'inline-block', width: '3px', height: '0.7em',
-              background: 'var(--ink)', marginLeft: '4px', verticalAlign: '-0.05em',
-              animation: 'blink 1s step-start infinite',
-            }} />
+            Where builders<br />find buyers
           </h1>
           <p style={{
             fontSize: 14, color: 'var(--text2)', lineHeight: 1.7,
