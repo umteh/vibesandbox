@@ -47,6 +47,8 @@ export default function AuthModal({ mode, onClose, onToggle, onAuth }: Props) {
         setLoading(false);
         return;
       }
+      // Seed the profile row with encrypted email (OAuth sign-ups go through /auth/callback)
+      await fetch('/api/profile', { method: 'POST', credentials: 'include' });
       onAuth(data.user?.email ?? form.email);
     }
     setLoading(false);
