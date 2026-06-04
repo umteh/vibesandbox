@@ -6,12 +6,13 @@ import { Resend } from 'resend';
 export const maxDuration = 60;
 
 const DIGEST_TO  = 'aichroniclesscout@gmail.com';
-const DAILY_CAP  = 20;
+const DAILY_CAP  = 25;
 
 // list() returns minimal fields; app() returns full detail incl. developerEmail + minInstalls
-const CATEGORIES = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS'] as const;
-const LIST_PER_CATEGORY = 20;   // fetch top 20 per category from Play Store
-const DETAIL_BATCH      = 8;    // parallel app() calls per batch
+const CATEGORIES   = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS'] as const;
+const COLLECTIONS  = ['TOP_FREE', 'GROSSING'] as const;
+const LIST_PER_CAT = 50;   // fetch top 50 per category — big apps dominate the top 20
+const DETAIL_BATCH = 10;   // parallel app() calls per batch
 
 type ListItem = { appId: string; score: number; title: string; summary: string };
 type AppDetail = Record<string, unknown>;
@@ -20,22 +21,24 @@ type AppDetail = Record<string, unknown>;
 
 async function getListItems(): Promise<ListItem[]> {
   const gp = (await import('google-play-scraper')).default;
+  const gpAny = gp as unknown as Record<string, Record<string, string>>;
   const seen = new Set<string>();
   const results: ListItem[] = [];
 
   for (const cat of CATEGORIES) {
-    const gpAny = gp as unknown as Record<string, Record<string, string>>;
-    const apps = (await gp.list({
-      category: gpAny.category[cat] as unknown as never,
-      collection: gpAny.collection['TOP_FREE'] as unknown as never,
-      num: LIST_PER_CATEGORY,
-      country: 'us',
-    })) as Array<{ appId: string; score: number; title: string; summary: string }>;
+    for (const col of COLLECTIONS) {
+      const apps = (await gp.list({
+        category: gpAny.category[cat] as unknown as never,
+        collection: gpAny.collection[col] as unknown as never,
+        num: LIST_PER_CAT,
+        country: 'us',
+      })) as Array<{ appId: string; score: number; title: string; summary: string }>;
 
-    for (const a of apps) {
-      if (!a.appId || seen.has(a.appId)) continue;
-      seen.add(a.appId);
-      results.push({ appId: a.appId, score: a.score ?? 0, title: a.title ?? '', summary: a.summary ?? '' });
+      for (const a of apps) {
+        if (!a.appId || seen.has(a.appId)) continue;
+        seen.add(a.appId);
+        results.push({ appId: a.appId, score: a.score ?? 0, title: a.title ?? '', summary: a.summary ?? '' });
+      }
     }
   }
 
@@ -69,7 +72,7 @@ function isIndieApp(app: AppDetail): boolean {
   const score    = Number(app.score ?? 0);
 
   if (!email || email.includes('noreply') || email.includes('no-reply')) return false;
-  if (installs < 100 || installs > 100_000) return false;
+  if (installs < 100 || installs > 1_000_000) return false;
   if (score < 2.5) return false;
   return true;
 }
