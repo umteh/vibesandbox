@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 6. Send outreach emails directly to developers + persist results
-  const fromAddr = `VibeSandbox <hello@${process.env.RESEND_FROM_DOMAIN}>`;
+  const fromAddr = `VibeSandbox <noreply@${process.env.RESEND_FROM_DOMAIN}>`;
   const sendResults = await Promise.allSettled(
     drafted.map(async ({ app, draft }) => {
       const devEmail = String(app.developerEmail ?? '');
