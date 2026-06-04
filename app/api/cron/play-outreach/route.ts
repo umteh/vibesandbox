@@ -6,13 +6,14 @@ import { Resend } from 'resend';
 export const maxDuration = 60;
 
 const DIGEST_TO  = 'aichroniclesscout@gmail.com';
-const DAILY_CAP  = 25;
+const DAILY_CAP      = 20;
 
 // list() returns minimal fields; app() returns full detail incl. developerEmail + minInstalls
-const CATEGORIES   = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS'] as const;
-const COLLECTIONS  = ['TOP_FREE', 'GROSSING'] as const;
-const LIST_PER_CAT = 50;   // fetch top 50 per category — big apps dominate the top 20
-const DETAIL_BATCH = 10;   // parallel app() calls per batch
+const CATEGORIES     = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS'] as const;
+const COLLECTIONS    = ['TOP_FREE', 'GROSSING'] as const;
+const LIST_PER_CAT   = 50;   // fetch top 50 per category — big apps dominate the top 20
+const MAX_TO_DETAIL  = 40;   // only detail-fetch top 40 by score — keeps us well under 60s
+const DETAIL_BATCH   = 15;   // parallel app() calls per batch
 
 type ListItem = { appId: string; score: number; title: string; summary: string };
 type AppDetail = Record<string, unknown>;
@@ -202,7 +203,8 @@ export async function GET(req: NextRequest) {
     .select('app_id')
     .in('app_id', listItems.map(i => i.appId));
   const seenSet = new Set((seen ?? []).map((r: { app_id: string }) => r.app_id));
-  const unseen = listItems.filter(i => !seenSet.has(i.appId));
+  // Take top MAX_TO_DETAIL by score — fetching all 250+ would exceed 60s timeout
+  const unseen = listItems.filter(i => !seenSet.has(i.appId)).slice(0, MAX_TO_DETAIL);
 
   console.log(`[play-outreach] listed=${listItems.length} unseen=${unseen.length}`);
 
