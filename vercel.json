@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/score-pending",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/play-outreach",
+      "schedule": "0 9 * * *"
     }
   ]
 }
