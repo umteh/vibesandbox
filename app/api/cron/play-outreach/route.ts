@@ -79,65 +79,93 @@ function isIndieApp(app: AppDetail): boolean {
 
 // ─── Draft ────────────────────────────────────────────────────────────────────
 
-async function draftEmail(app: AppDetail, genai: GoogleGenerativeAI): Promise<string> {
-  const model   = genai.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.7 } });
+interface Draft { subject: string; body: string; }
+
+async function draftEmail(app: AppDetail, genai: GoogleGenerativeAI): Promise<Draft> {
+  const model   = genai.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.7, responseMimeType: 'application/json' } });
   const title   = String(app.title ?? 'your app');
   const summary = String(app.summary ?? '').slice(0, 300);
 
   const result = await model.generateContent(
     `You are helping VibeSandbox — an AI-powered marketplace where indie builders sell their apps — reach out to indie Android app developers.
 
-Write a short, friendly outreach email (under 120 words) to the developer of "${title}". The app: ${summary}
+Write a short outreach email to the developer of "${title}". The app: ${summary}
 
-Rules:
-- Open with a genuine one-line observation about what the app does (not generic praise like "great work" or "nice app")
+Output ONLY valid JSON: { "subject": "...", "body": "..." }
+
+Rules for body (under 120 words):
+- Open with a genuine one-line observation about what the app does (not generic praise like "great work")
 - Pitch: VibeSandbox lists apps for visibility and potential acquisition, free to list, AI scores the app across 5 buyer-relevant dimensions
 - Mention: growing email newsletter that features newly listed apps to potential buyers
-- End with exactly: "Feel free to check it out: https://vibesandbox.store"
+- End body with exactly: "Feel free to check it out: https://vibesandbox.store"
 - Tone: friendly founder-to-founder, not marketing copy
 - Do NOT open with "I hope this email finds you well" or similar filler
-- Sign off as: The VibeSandbox team`
+- Sign off as: The VibeSandbox team
+
+Rules for subject (under 10 words):
+- Specific to the app, not generic
+- No "Quick note" or "Hey" openers
+- Example: "Your [App Name] — seen on Play Store"`
   );
-  return result.response.text().trim();
+
+  try {
+    const parsed = JSON.parse(result.response.text().trim()) as { subject?: string; body?: string };
+    return {
+      subject: parsed.subject ?? `Your app on VibeSandbox marketplace`,
+      body:    parsed.body    ?? result.response.text().trim(),
+    };
+  } catch {
+    // Fallback if JSON parse fails
+    return {
+      subject: `${title} — VibeSandbox marketplace`,
+      body:    result.response.text().trim(),
+    };
+  }
 }
 
-// ─── Digest email ─────────────────────────────────────────────────────────────
+// ─── Developer email (plain text body → HTML wrapper) ─────────────────────────
 
-function buildDigestHtml(apps: Array<{ app: AppDetail; draft: string }>, date: string) {
-  const cards = apps.map(({ app, draft }) => {
+function buildDevEmailHtml(body: string) {
+  const lines = body.split('\n').map(l => `<p style="margin:0 0 12px">${l}</p>`).join('');
+  return `<!DOCTYPE html>
+<html>
+<body style="font-family:sans-serif;font-size:14px;line-height:1.6;max-width:560px;margin:0 auto;padding:24px;color:#111">
+  ${lines}
+  <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;margin-top:32px;padding-top:12px">
+    You're receiving this because your app is listed on the Google Play Store.<br>
+    Reply "unsubscribe" to opt out. VibeSandbox, San Francisco CA.
+  </p>
+</body>
+</html>`;
+}
+
+// ─── Summary digest (sent to aichroniclesscout — just a log of what was sent) ──
+
+function buildSummaryHtml(apps: Array<{ app: AppDetail; draft: Draft }>, date: string) {
+  const rows = apps.map(({ app, draft }) => {
     const title    = String(app.title ?? '');
-    const genre    = String(app.genre ?? '');
     const email    = String(app.developerEmail ?? '');
-    const dev      = String(app.developer ?? '');
     const installs = Number(app.minInstalls ?? 0).toLocaleString();
-    const score    = Number(app.score ?? 0).toFixed(1);
     const appId    = String(app.appId ?? '');
     const url      = `https://play.google.com/store/apps/details?id=${encodeURIComponent(appId)}`;
-
     return `
-<div style="border:2px solid #111;padding:20px;margin-bottom:24px;font-family:monospace;font-size:13px">
-  <div style="font-size:15px;font-weight:700;margin-bottom:6px">${title}</div>
-  <div style="color:#555;margin-bottom:4px">${genre} &nbsp;·&nbsp; ${dev}</div>
-  <div style="margin-bottom:4px">📧 <strong>${email}</strong></div>
-  <div style="color:#555;margin-bottom:10px">📥 ${installs}+ installs &nbsp;·&nbsp; ⭐ ${score}</div>
-  <a href="${url}" style="color:#1a73e8;font-size:12px">Open Play Store listing ↗</a>
-  <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
-  <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Drafted email — copy &amp; send</div>
-  <pre style="white-space:pre-wrap;font-size:13px;background:#f8f8f8;padding:14px;border:1px solid #e0e0e0;margin:0;line-height:1.6">${draft}</pre>
-</div>`;
+<tr>
+  <td style="padding:10px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:13px">
+    <a href="${url}" style="color:#111;font-weight:700;text-decoration:none">${title}</a><br>
+    <span style="color:#888;font-size:12px">${email} &nbsp;·&nbsp; ${installs}+ installs</span><br>
+    <span style="color:#555;font-size:12px;font-style:italic">Subject: ${draft.subject}</span>
+  </td>
+</tr>`;
   }).join('');
 
   return `<!DOCTYPE html>
 <html>
-<body style="font-family:monospace;max-width:700px;margin:0 auto;padding:24px;background:#fff;color:#111">
-  <h2 style="font-size:17px;margin-bottom:4px;font-weight:900">VibeSandbox — Play Store outreach</h2>
-  <p style="color:#666;font-size:12px;margin-top:2px;margin-bottom:28px">
-    ${date} &nbsp;·&nbsp; ${apps.length} indie developer${apps.length === 1 ? '' : 's'} found today
+<body style="font-family:monospace;max-width:640px;margin:0 auto;padding:24px;background:#fff;color:#111">
+  <h2 style="font-size:16px;font-weight:900;margin-bottom:4px">VibeSandbox — outreach sent</h2>
+  <p style="color:#666;font-size:12px;margin-top:2px;margin-bottom:20px">
+    ${date} &nbsp;·&nbsp; ${apps.length} email${apps.length === 1 ? '' : 's'} sent to app developers
   </p>
-  ${cards}
-  <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:16px;margin-top:8px">
-    Review each draft and send manually. Reply "unsubscribe" to stop.
-  </p>
+  <table style="width:100%;border-collapse:collapse;border:2px solid #111">${rows}</table>
 </body>
 </html>`;
 }
@@ -207,25 +235,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, message: 'No indie targets with email', details: details.length });
   }
 
-  // 5. Draft + persist in parallel
+  // 5. Draft in parallel
   const draftResults = await Promise.allSettled(
     targets.map(async app => {
       const draft = await draftEmail(app, genai);
-      await admin.from('outreach_targets').upsert({
-        app_id:          String(app.appId ?? ''),
-        app_name:        String(app.title ?? ''),
-        developer_email: String(app.developerEmail ?? ''),
-        developer:       String(app.developer ?? ''),
-        installs:        String(app.minInstalls ?? ''),
-        score:           Number(app.score ?? 0),
-        drafted_message: draft,
-      }, { onConflict: 'source,app_id' });
       return { app, draft };
     })
   );
 
   const drafted = draftResults
-    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: string }> => r.status === 'fulfilled')
+    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: Draft }> => r.status === 'fulfilled')
     .map(r => r.value);
 
   console.log(`[play-outreach] drafted=${drafted.length}`);
@@ -234,14 +253,51 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, message: 'All drafts failed', targets: targets.length });
   }
 
-  // 6. Send digest
+  // 6. Send outreach emails directly to developers + persist results
+  const fromAddr = `VibeSandbox <hello@${process.env.RESEND_FROM_DOMAIN}>`;
+  const sendResults = await Promise.allSettled(
+    drafted.map(async ({ app, draft }) => {
+      const devEmail = String(app.developerEmail ?? '');
+      const { error } = await resend.emails.send({
+        from:    fromAddr,
+        to:      devEmail,
+        subject: draft.subject,
+        html:    buildDevEmailHtml(draft.body),
+      });
+
+      const status = error ? 'failed' : 'sent';
+      if (error) console.error(`[play-outreach] send failed to ${devEmail}:`, error);
+
+      await admin.from('outreach_targets').upsert({
+        app_id:          String(app.appId ?? ''),
+        app_name:        String(app.title ?? ''),
+        developer_email: devEmail,
+        developer:       String(app.developer ?? ''),
+        installs:        String(app.minInstalls ?? ''),
+        score:           Number(app.score ?? 0),
+        drafted_message: draft.body,
+        status,
+      }, { onConflict: 'source,app_id' });
+
+      return { app, draft, sent: !error };
+    })
+  );
+
+  const sent = sendResults
+    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: Draft; sent: boolean }> =>
+      r.status === 'fulfilled' && r.value.sent)
+    .map(r => r.value);
+
+  console.log(`[play-outreach] sent=${sent.length}/${drafted.length}`);
+
+  // 7. Send summary digest to DIGEST_TO
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  const html = buildDigestHtml(drafted, date);
+  const html = buildSummaryHtml(sent, date);
 
   const { error: sendErr } = await resend.emails.send({
-    from:    `VibeSandbox <noreply@${process.env.RESEND_FROM_DOMAIN}>`,
+    from:    fromAddr,
     to:      DIGEST_TO,
-    subject: `VibeSandbox outreach — ${drafted.length} new apps · ${new Date().toLocaleDateString()}`,
+    subject: `VibeSandbox outreach — ${sent.length} emails sent · ${new Date().toLocaleDateString()}`,
     html,
   });
 
@@ -255,6 +311,7 @@ export async function GET(req: NextRequest) {
     listed:  listItems.length,
     unseen:  unseen.length,
     targets: targets.length,
-    emailed: drafted.length,
+    drafted: drafted.length,
+    sent:    sent.length,
   });
 }
