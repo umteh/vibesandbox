@@ -88,51 +88,50 @@ async function draftEmail(app: AppDetail, genai: GoogleGenerativeAI): Promise<Dr
   const summary = String(app.summary ?? '').slice(0, 300);
 
   const result = await model.generateContent(
-    `You are helping VibeSandbox — an AI-powered marketplace where indie builders sell their apps — reach out to indie Android app developers.
+    `You are writing a personalized cold email opener for VibeSandbox, an indie app marketplace.
 
-Write a short outreach email to the developer of "${title}". The app: ${summary}
+App name: "${title}"
+App description: ${summary}
 
-Output ONLY valid JSON: { "subject": "...", "body": "..." }
+Output ONLY valid JSON: { "personalizedOpener": "..." }
 
-Rules for body (under 120 words):
-- Open with a genuine one-line observation about what the app does (not generic praise like "great work")
-- Pitch: VibeSandbox lists apps for visibility and potential acquisition, free to list, AI scores the app across 5 buyer-relevant dimensions
-- Mention: growing email newsletter that features newly listed apps to potential buyers
-- End body with exactly: "Feel free to check it out: https://vibesandbox.store"
-- Tone: friendly founder-to-founder, not marketing copy
-- Do NOT open with "I hope this email finds you well" or similar filler
-- Sign off as: The VibeSandbox team
-
-Rules for subject (under 10 words):
-- Specific to the app, not generic
-- No "Quick note" or "Hey" openers
-- Example: "Your [App Name] — seen on Play Store"`
+Rules for personalizedOpener (1-2 sentences max):
+- A genuine, specific observation about what this app does or who it helps
+- Must reference something concrete from the app description
+- Do NOT use generic praise like "great work", "nice app", "impressive"
+- Do NOT mention VibeSandbox — the rest of the email handles that
+- Tone: casual, human, one founder noticing another's work`
   );
 
   try {
-    const parsed = JSON.parse(result.response.text().trim()) as { subject?: string; body?: string };
+    const parsed = JSON.parse(result.response.text().trim()) as { personalizedOpener?: string };
+    const opener = parsed.personalizedOpener ?? '';
     return {
-      subject: parsed.subject ?? `Your app on VibeSandbox marketplace`,
-      body:    parsed.body    ?? result.response.text().trim(),
+      subject: `Get a valuation for ${title}`,
+      body:    opener,
     };
   } catch {
-    // Fallback if JSON parse fails
     return {
-      subject: `${title} — VibeSandbox marketplace`,
-      body:    result.response.text().trim(),
+      subject: `Get a valuation for ${title}`,
+      body:    '',
     };
   }
 }
 
 // ─── Developer email (plain text body → HTML wrapper) ─────────────────────────
 
-function buildDevEmailHtml(body: string) {
-  const lines = body.split('\n').map(l => `<p style="margin:0 0 12px">${l}</p>`).join('');
+function buildDevEmailHtml(personalizedOpener: string) {
   return `<!DOCTYPE html>
 <html>
 <body style="font-family:sans-serif;font-size:14px;line-height:1.6;max-width:560px;margin:0 auto;padding:24px;color:#111">
-  ${lines}
-  <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;margin-top:32px;padding-top:12px">
+  <p style="margin:0 0 16px">Hi there,</p>
+  ${personalizedOpener ? `<p style="margin:0 0 16px">${personalizedOpener}</p>` : ''}
+  <p style="margin:0 0 16px">I run VibeSandbox, where indie developers list projects to gauge buyer interest and get a sense of market value. It's free, and we feature new listings in our newsletter.</p>
+  <p style="margin:0 0 16px">Even if selling isn't on your radar right now, it can be a useful way to get a sense of what your app might be worth and see how others value what you've created.</p>
+  <p style="margin:0 0 16px">If you're curious, feel free to take a look: <a href="https://vibesandbox.store" style="color:#111;font-weight:600">https://vibesandbox.store</a></p>
+  <p style="margin:0 0 4px">Best,</p>
+  <p style="margin:0 0 32px">Sophia</p>
+  <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:12px">
     You're receiving this because your app is listed on the Google Play Store.<br>
     Reply "unsubscribe" to opt out. VibeSandbox, San Francisco CA.
   </p>
@@ -264,7 +263,7 @@ export async function GET(req: NextRequest) {
         from:    fromAddr,
         to:      devEmail,
         subject: draft.subject,
-        html:    buildDevEmailHtml(draft.body),
+        html:    buildDevEmailHtml(draft.body),  // draft.body holds the personalized opener
       });
 
       const status = error ? 'failed' : 'sent';
