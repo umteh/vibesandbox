@@ -6,7 +6,7 @@ import { Resend } from 'resend';
 export const maxDuration = 60;
 
 const DIGEST_TO  = 'aichroniclesscout@gmail.com';
-const DAILY_CAP      = 80;
+const DAILY_CAP      = 70;
 
 // list() returns minimal fields; app() returns full detail incl. developerEmail + minInstalls
 const CATEGORIES     = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS', 'EDUCATION', 'FINANCE', 'LIFESTYLE', 'HEALTH_AND_FITNESS'] as const;
