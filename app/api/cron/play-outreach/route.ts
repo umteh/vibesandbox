@@ -128,7 +128,7 @@ function buildDevEmailHtml(personalizedOpener: string) {
   ${personalizedOpener ? `<p style="margin:0 0 16px">${personalizedOpener}</p>` : ''}
   <p style="margin:0 0 16px">I run VibeSandbox, where indie developers list projects to gauge buyer interest and get a sense of market value. It's free, and we feature new listings in our newsletter.</p>
   <p style="margin:0 0 16px">Even if selling isn't on your radar right now, it can be a useful way to get a sense of what your app might be worth and see how others value what you've created.</p>
-  <p style="margin:0 0 16px">If you're curious, feel free to take a look: <a href="https://vibesandbox.store" style="color:#111;font-weight:600">https://vibesandbox.store</a></p>
+  <p style="margin:0 0 16px">If you're curious, feel free to take a look: <a href="https://vibesandbox.store/feed" style="color:#111;font-weight:600">https://vibesandbox.store</a></p>
   <p style="margin:0 0 4px">Best,</p>
   <p style="margin:0 0 32px">Sophia</p>
   <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:12px">

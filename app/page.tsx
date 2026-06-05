@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { redirect, RedirectType } from 'next/navigation';
 
 export default function Home() {
-  redirect('/feed');
+  redirect('/feed', RedirectType.replace);
 }
