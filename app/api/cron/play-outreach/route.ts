@@ -9,7 +9,7 @@ const DIGEST_TO  = 'aichroniclesscout@gmail.com';
 const DAILY_CAP      = 20;
 
 // list() returns minimal fields; app() returns full detail incl. developerEmail + minInstalls
-const CATEGORIES     = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS'] as const;
+const CATEGORIES     = ['TOOLS', 'PRODUCTIVITY', 'BUSINESS', 'EDUCATION', 'FINANCE', 'LIFESTYLE', 'HEALTH_AND_FITNESS'] as const;
 const COLLECTIONS    = ['TOP_FREE', 'GROSSING'] as const;
 const LIST_PER_CAT   = 50;   // fetch top 50 per category — big apps dominate the top 20
 const MAX_TO_DETAIL  = 40;   // only detail-fetch top 40 by score — keeps us well under 60s
@@ -73,7 +73,7 @@ function isIndieApp(app: AppDetail): boolean {
   const score    = Number(app.score ?? 0);
 
   if (!email || email.includes('noreply') || email.includes('no-reply')) return false;
-  if (installs < 100 || installs > 1_000_000) return false;
+  if (installs < 100 || installs > 100_000) return false;
   if (score < 2.5) return false;
   return true;
 }
