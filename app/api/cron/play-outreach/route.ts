@@ -260,10 +260,11 @@ export async function GET(req: NextRequest) {
     drafted.map(async ({ app, draft }) => {
       const devEmail = String(app.developerEmail ?? '');
       const { error } = await resend.emails.send({
-        from:    fromAddr,
-        to:      devEmail,
-        subject: draft.subject,
-        html:    buildDevEmailHtml(draft.body),  // draft.body holds the personalized opener
+        from:     fromAddr,
+        to:       devEmail,
+        replyTo:  'aichroniclesscout@gmail.com',
+        subject:  draft.subject,
+        html:     buildDevEmailHtml(draft.body),
       });
 
       const status = error ? 'failed' : 'sent';
