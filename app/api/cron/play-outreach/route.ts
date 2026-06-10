@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Resend } from 'resend';
+import { createHmac } from 'crypto';
 
 export const maxDuration = 60;
 
@@ -14,6 +15,9 @@ const COLLECTIONS    = ['TOP_FREE', 'GROSSING'] as const;
 const LIST_PER_CAT   = 50;   // fetch top 50 per category — big apps dominate the top 20
 const MAX_TO_DETAIL  = 40;   // only detail-fetch top 40 by score — keeps us well under 60s
 const DETAIL_BATCH   = 15;   // parallel app() calls per batch
+
+// Opt-out token TTL: 30 days
+const OPT_OUT_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 type ListItem = { appId: string; score: number; title: string; summary: string };
 type AppDetail = Record<string, unknown>;
@@ -78,82 +82,128 @@ function isIndieApp(app: AppDetail): boolean {
   return true;
 }
 
-// ─── Draft ────────────────────────────────────────────────────────────────────
+// ─── Opt-out token ────────────────────────────────────────────────────────────
 
-interface Draft { subject: string; body: string; }
+function buildOptOutToken(listingId: string): string {
+  const secret = process.env.OPT_OUT_SECRET ?? process.env.INTERNAL_SECRET ?? '';
+  const expiry = Math.floor(Date.now() / 1000) + OPT_OUT_TTL_SECONDS;
+  const sig = createHmac('sha256', secret).update(`${listingId}|${expiry}`).digest('hex');
+  return `${sig}.${expiry}`;
+}
 
-async function draftEmail(app: AppDetail, genai: GoogleGenerativeAI): Promise<Draft> {
+// ─── Draft + listing content ──────────────────────────────────────────────────
+
+interface DraftResult {
+  subject: string;
+  body: string;
+  marketplaceDescription: string;
+  buyerCritique: string;
+}
+
+async function draftContent(app: AppDetail, genai: GoogleGenerativeAI): Promise<DraftResult> {
   const model   = genai.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.7, responseMimeType: 'application/json' } });
   const title   = String(app.title ?? 'your app');
   const summary = String(app.summary ?? '').slice(0, 300);
+  const genre   = String(app.genre ?? app.genreId ?? 'Productivity');
+  const installs = Number(app.minInstalls ?? 0).toLocaleString();
+  const rating   = Number(app.score ?? 0).toFixed(1);
+  const ratings  = Number(app.ratings ?? 0).toLocaleString();
+  const description = String(app.description ?? summary).slice(0, 500);
 
   const result = await model.generateContent(
-    `You are writing a personalized cold email opener for VibeSandbox, an indie app marketplace.
+    `You are writing content for VibeSandbox, an indie app marketplace where apps are bought and sold.
 
-App name: "${title}"
-App description: ${summary}
+App: "${title}"
+Category: ${genre}
+Installs: ${installs}+
+Rating: ${rating}/5 from ${ratings} reviews
+Play Store description: ${description}
 
-Output ONLY valid JSON: { "personalizedOpener": "..." }
+Output ONLY valid JSON:
+{
+  "personalizedOpener": "...",
+  "marketplaceDescription": "...",
+  "buyerCritique": "..."
+}
 
-Rules for personalizedOpener (1-2 sentences max):
-- A genuine, specific observation about what this app does or who it helps
-- Must reference something concrete from the app description
-- Do NOT use generic praise like "great work", "nice app", "impressive"
-- Do NOT mention VibeSandbox — the rest of the email handles that
-- Tone: casual, human, one founder noticing another's work`
+Rules:
+- personalizedOpener: 1-2 sentences. A genuine, specific observation about what this app does or who it helps. Must reference something concrete from the description. Do NOT use generic praise. Do NOT mention VibeSandbox. Tone: casual, human, one founder noticing another's work.
+- marketplaceDescription: 2-3 sentences from a buyer's perspective — what the app does, who its users are, and why it has real value as an acquisition.
+- buyerCritique: 3-4 sentences on what makes this app attractive to buy — focus on what's working (distribution, loyal users, niche, revenue signal). Do NOT mention weaknesses. Write as if you're a deal scout excited about this find.`
   );
 
   try {
-    const parsed = JSON.parse(result.response.text().trim()) as { personalizedOpener?: string };
-    const opener = parsed.personalizedOpener ?? '';
+    const parsed = JSON.parse(result.response.text().trim()) as {
+      personalizedOpener?: string;
+      marketplaceDescription?: string;
+      buyerCritique?: string;
+    };
+
+    const marketplaceDescription = (parsed.marketplaceDescription ?? '').trim();
+    const buyerCritique          = (parsed.buyerCritique ?? '').trim();
+    const personalizedOpener     = (parsed.personalizedOpener ?? '').trim();
+
     return {
-      subject: `Get a valuation for ${title}`,
-      body:    opener,
+      subject:                `We listed ${title} on VibeSandbox — see what buyers think`,
+      body:                   personalizedOpener,
+      marketplaceDescription,
+      buyerCritique,
     };
   } catch {
     return {
-      subject: `Get a valuation for ${title}`,
-      body:    '',
+      subject:                `We listed ${title} on VibeSandbox — see what buyers think`,
+      body:                   '',
+      marketplaceDescription: '',
+      buyerCritique:          '',
     };
   }
 }
 
-// ─── Developer email (plain text body → HTML wrapper) ─────────────────────────
+// ─── Developer email ──────────────────────────────────────────────────────────
 
-function buildDevEmailHtml(personalizedOpener: string) {
+function buildDevEmailHtml(params: {
+  opener: string;
+  title: string;
+  listingUrl: string;
+  optOutUrl: string;
+}) {
+  const { opener, title, listingUrl, optOutUrl } = params;
   return `<!DOCTYPE html>
 <html>
 <body style="font-family:sans-serif;font-size:14px;line-height:1.6;max-width:560px;margin:0 auto;padding:24px;color:#111">
   <p style="margin:0 0 16px">Hi there,</p>
-  ${personalizedOpener ? `<p style="margin:0 0 16px">${personalizedOpener}</p>` : ''}
-  <p style="margin:0 0 16px">I run VibeSandbox, where indie developers list projects to gauge buyer interest and get a sense of market value. It's free, and we feature new listings in our newsletter.</p>
-  <p style="margin:0 0 16px">Even if selling isn't on your radar right now, it can be a useful way to get a sense of what your app might be worth and see how others value what you've created.</p>
-  <p style="margin:0 0 16px">If you're curious, feel free to take a look: <a href="https://vibesandbox.store/feed" style="color:#111;font-weight:600">https://vibesandbox.store</a></p>
+  ${opener ? `<p style="margin:0 0 16px">${opener}</p>` : ''}
+  <p style="margin:0 0 16px">I run VibeSandbox, a marketplace where indie app developers list projects to gauge buyer interest and get a sense of market value.</p>
+  <p style="margin:0 0 16px">We went ahead and created a listing for <strong>${title}</strong> — see what buyers think and what AI says about its acquisition value:</p>
+  <p style="margin:0 0 16px"><a href="${listingUrl}" style="color:#111;font-weight:700">${listingUrl}</a></p>
+  <p style="margin:0 0 16px">The full AI score is locked until you claim the listing. Takes 30 seconds — no credit card, no commitment. Even if selling isn't on your radar, it's worth knowing what your app is worth.</p>
   <p style="margin:0 0 4px">Best,</p>
   <p style="margin:0 0 32px">Sophia</p>
   <p style="font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:12px">
     You're receiving this because your app is listed on the Google Play Store.<br>
-    Reply "unsubscribe" to opt out. VibeSandbox, San Francisco CA.
+    <a href="${optOutUrl}" style="color:#aaa">Remove this listing</a> · Reply "unsubscribe" to opt out of future emails. VibeSandbox, San Francisco CA.
   </p>
 </body>
 </html>`;
 }
 
-// ─── Summary digest (sent to aichroniclesscout — just a log of what was sent) ──
+// ─── Summary digest ────────────────────────────────────────────────────────────
 
-function buildSummaryHtml(apps: Array<{ app: AppDetail; draft: Draft }>, date: string) {
-  const rows = apps.map(({ app, draft }) => {
+function buildSummaryHtml(apps: Array<{ app: AppDetail; draft: DraftResult; listingId: string | null }>, date: string) {
+  const rows = apps.map(({ app, draft, listingId }) => {
     const title    = String(app.title ?? '');
     const email    = String(app.developerEmail ?? '');
     const installs = Number(app.minInstalls ?? 0).toLocaleString();
     const appId    = String(app.appId ?? '');
     const url      = `https://play.google.com/store/apps/details?id=${encodeURIComponent(appId)}`;
+    const listingNote = listingId ? `listing: /listings/${listingId}` : 'listing: skipped (Gemini failed)';
     return `
 <tr>
   <td style="padding:10px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:13px">
     <a href="${url}" style="color:#111;font-weight:700;text-decoration:none">${title}</a><br>
     <span style="color:#888;font-size:12px">${email} &nbsp;·&nbsp; ${installs}+ installs</span><br>
-    <span style="color:#555;font-size:12px;font-style:italic">Subject: ${draft.subject}</span>
+    <span style="color:#555;font-size:12px;font-style:italic">Subject: ${draft.subject}</span><br>
+    <span style="color:#666;font-size:11px">${listingNote}</span>
   </td>
 </tr>`;
   }).join('');
@@ -183,6 +233,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'GOOGLE_AI_API_KEY not configured' }, { status: 503 });
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://vibesandbox.store';
   const admin  = createAdminClient();
   const genai  = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
   const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -225,7 +276,6 @@ export async function GET(req: NextRequest) {
   console.log(`[play-outreach] details=${details.length} targets=${targets.length}`);
 
   if (targets.length === 0) {
-    // Still record all as seen so we don't re-fetch tomorrow
     await Promise.allSettled(details.map(app =>
       admin.from('outreach_targets').upsert({
         app_id:   String(app.appId ?? ''),
@@ -236,16 +286,25 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, message: 'No indie targets with email', details: details.length });
   }
 
-  // 5. Draft in parallel
+  // 5. Pre-check: skip apps that already have a listing
+  const { data: existingListings } = await admin
+    .from('listings')
+    .select('source_app_id, id')
+    .in('source_app_id', targets.map(a => String(a.appId ?? '')));
+  const existingMap = new Map(
+    (existingListings ?? []).map((r: { source_app_id: string; id: string }) => [r.source_app_id, r.id])
+  );
+
+  // 6. Draft content in parallel (email opener + marketplace description + buyer critique)
   const draftResults = await Promise.allSettled(
     targets.map(async app => {
-      const draft = await draftEmail(app, genai);
+      const draft = await draftContent(app, genai);
       return { app, draft };
     })
   );
 
   const drafted = draftResults
-    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: Draft }> => r.status === 'fulfilled')
+    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: DraftResult }> => r.status === 'fulfilled')
     .map(r => r.value);
 
   console.log(`[play-outreach] drafted=${drafted.length}`);
@@ -254,24 +313,81 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, message: 'All drafts failed', targets: targets.length });
   }
 
-  // 6. Send outreach emails directly to developers + persist results
+  // 7. Create listings + send emails
   const fromAddr = `Sophia at VibeSandbox <sophia@${process.env.RESEND_FROM_DOMAIN}>`;
+
   const sendResults = await Promise.allSettled(
     drafted.map(async ({ app, draft }) => {
+      const appId    = String(app.appId ?? '');
       const devEmail = String(app.developerEmail ?? '');
+
+      // Determine listing ID — use existing or create new
+      let listingId: string | null = existingMap.get(appId) ?? null;
+
+      if (!listingId && draft.marketplaceDescription && draft.buyerCritique) {
+        // Create a new unclaimed listing
+        try {
+          const screenshots = (app.screenshots as string[] | undefined) ?? [];
+          const screenshotUrl = screenshots[0] ?? null;
+
+          const devName     = String(app.developer ?? 'App Developer');
+          const initials    = devName.split(' ').slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('') || 'AD';
+
+          const { data: newListing, error: insertErr } = await admin
+            .from('listings')
+            .insert({
+              title:              String(app.title ?? ''),
+              url:                `play.google.com/store/apps/details?id=${appId}`,
+              description:        draft.marketplaceDescription,
+              critique:           draft.buyerCritique,
+              category:           mapGenreToCategory(String(app.genre ?? app.genreId ?? '')),
+              price_type:         'offer',
+              status:             'not_for_sale',
+              source_app_id:      appId,
+              screenshot_url:     screenshotUrl,
+              screenshot_status:  screenshotUrl ? 'captured' : 'pending',
+              platform:           'android',
+              creator_name:       devName,
+              creator_initials:   initials,
+              tags:               [],
+              listing_metadata:   {},
+              // user_id intentionally null — unclaimed
+            })
+            .select('id')
+            .single();
+
+          if (insertErr) {
+            console.error(`[play-outreach] listing insert failed for ${appId}:`, insertErr);
+          } else {
+            listingId = newListing?.id ?? null;
+          }
+        } catch (err) {
+          console.error(`[play-outreach] listing insert threw for ${appId}:`, err);
+        }
+      }
+
+      // Build email URL — link to specific listing if we have one, else /feed
+      const listingUrl = listingId
+        ? `${siteUrl}/listings/${listingId}`
+        : `${siteUrl}/feed`;
+
+      const optOutUrl = listingId
+        ? `${siteUrl}/api/listings/${listingId}/remove?token=${buildOptOutToken(listingId)}`
+        : `${siteUrl}/feed`;
+
       const { error } = await resend.emails.send({
-        from:     fromAddr,
-        to:       devEmail,
-        replyTo:  'aichroniclesscout@gmail.com',
-        subject:  draft.subject,
-        html:     buildDevEmailHtml(draft.body),
+        from:    fromAddr,
+        to:      devEmail,
+        replyTo: 'aichroniclesscout@gmail.com',
+        subject: draft.subject,
+        html:    buildDevEmailHtml({ opener: draft.body, title: String(app.title ?? ''), listingUrl, optOutUrl }),
       });
 
       const status = error ? 'failed' : 'sent';
       if (error) console.error(`[play-outreach] send failed to ${devEmail}:`, error);
 
       await admin.from('outreach_targets').upsert({
-        app_id:          String(app.appId ?? ''),
+        app_id:          appId,
         app_name:        String(app.title ?? ''),
         developer_email: devEmail,
         developer:       String(app.developer ?? ''),
@@ -281,18 +397,18 @@ export async function GET(req: NextRequest) {
         status,
       }, { onConflict: 'source,app_id' });
 
-      return { app, draft, sent: !error };
+      return { app, draft, listingId, sent: !error };
     })
   );
 
   const sent = sendResults
-    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: Draft; sent: boolean }> =>
+    .filter((r): r is PromiseFulfilledResult<{ app: AppDetail; draft: DraftResult; listingId: string | null; sent: boolean }> =>
       r.status === 'fulfilled' && r.value.sent)
     .map(r => r.value);
 
   console.log(`[play-outreach] sent=${sent.length}/${drafted.length}`);
 
-  // 7. Send summary digest to DIGEST_TO
+  // 8. Send summary digest to DIGEST_TO
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const html = buildSummaryHtml(sent, date);
 
@@ -304,16 +420,32 @@ export async function GET(req: NextRequest) {
   });
 
   if (sendErr) {
-    console.error('[play-outreach] resend failed:', sendErr);
-    return NextResponse.json({ error: 'Email send failed' }, { status: 500 });
+    console.error('[play-outreach] digest send failed:', sendErr);
+    return NextResponse.json({ error: 'Digest email failed' }, { status: 500 });
   }
+
+  const listingsCreated = sent.filter(s => s.listingId !== null && !existingMap.has(String(s.app.appId ?? ''))).length;
 
   return NextResponse.json({
     ok: true,
-    listed:  listItems.length,
-    unseen:  unseen.length,
-    targets: targets.length,
-    drafted: drafted.length,
-    sent:    sent.length,
+    listed:           listItems.length,
+    unseen:           unseen.length,
+    targets:          targets.length,
+    drafted:          drafted.length,
+    sent:             sent.length,
+    listings_created: listingsCreated,
   });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function mapGenreToCategory(genre: string): string {
+  const g = genre.toLowerCase();
+  if (g.includes('productivity') || g.includes('tools') || g.includes('business')) return 'Productivity';
+  if (g.includes('health') || g.includes('fitness'))  return 'Health';
+  if (g.includes('education'))                         return 'Education';
+  if (g.includes('finance'))                           return 'Finance';
+  if (g.includes('social'))                            return 'Social';
+  if (g.includes('lifestyle'))                         return 'Other';
+  return 'Other';
 }

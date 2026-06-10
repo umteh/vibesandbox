@@ -1,5 +1,5 @@
 export type PriceType = 'fixed' | 'offer' | 'free';
-export type ListingStatus = 'pending' | 'scored' | 'scoring_failed' | 'rejected';
+export type ListingStatus = 'pending' | 'scored' | 'scoring_failed' | 'rejected' | 'not_for_sale';
 export type ScreenshotStatus = 'pending' | 'captured' | 'failed' | 'auth_required';
 
 export interface ScoreBreakdown {
@@ -31,6 +31,7 @@ export interface Listing {
   screenshotStatus?: ScreenshotStatus;
   listing_metadata?: Record<string, unknown> | null;
   platform?: 'web' | 'ios' | 'android' | 'cross-platform';
+  source_app_id?: string | null;
 }
 
 export const CATEGORIES = ['All', 'Productivity', 'Writing', 'Code', 'Design', 'Research', 'Health', 'Education', 'Finance', 'Marketing', 'Social', 'Other'] as const;
@@ -221,5 +222,6 @@ export function fromDbRow(row: Record<string, any>): Listing {
     screenshotStatus: (row.screenshot_status ?? 'pending') as ScreenshotStatus,
     listing_metadata: row.listing_metadata ?? null,
     platform: (row.platform ?? 'web') as 'web' | 'ios' | 'android' | 'cross-platform',
+    source_app_id: row.source_app_id ?? null,
   };
 }

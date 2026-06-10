@@ -123,7 +123,63 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
             <p style={{ fontSize: 16, color: 'var(--text)', lineHeight: 1.7, marginBottom: 28 }}>{listing.tagline}</p>
 
-            {listing.score !== null && c ? (
+            {listing.status === 'not_for_sale' ? (
+              <>
+                {/* Buyer critique — positive AI analysis */}
+                {listing.critique && (
+                  <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 28 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                      What buyers love about this app
+                    </div>
+                    <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>{listing.critique}</p>
+                  </div>
+                )}
+
+                {/* Locked score breakdown */}
+                <div style={{ background: 'var(--bg)', border: '2px solid var(--border2)', borderRadius: 12, padding: 24, marginBottom: 28 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)' }}>AI Acquisition Score</div>
+                    <div style={{ fontSize: 11, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      🔒 Unlocked when claimed
+                    </div>
+                  </div>
+                  {DIMENSIONS_ORDERED.map(k => (
+                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                      <span style={{ fontSize: 12, color: 'var(--text3)', width: 56, flexShrink: 0 }}>{DIMENSION_LABELS[k]}</span>
+                      <div style={{ flex: 1, height: 8, background: 'var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+                        <div style={{ width: '60%', height: '100%', background: 'var(--border2)', borderRadius: 4 }} />
+                      </div>
+                      <span style={{ fontSize: 12, color: 'var(--border2)', width: 28, textAlign: 'right', fontFamily: "'DM Mono', monospace" }}>?</span>
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 16, padding: '12px 16px', background: '#fff', border: '1px solid var(--border)', borderRadius: 8, textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 8 }}>Full score breakdown unlocked when you claim this listing</div>
+                  </div>
+                </div>
+
+                {/* Claim CTA */}
+                <div style={{ background: 'oklch(0.97 0.04 128)', border: '2px solid var(--ink)', borderRadius: 8, padding: 24, marginBottom: 28 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.01em' }}>
+                    Is this your app?
+                  </div>
+                  <p style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.6, marginBottom: 16 }}>
+                    Claim it to unlock the full AI score breakdown, see buyer interest, and decide if you want to list it for sale.
+                  </p>
+                  <a
+                    href={`mailto:support@vibesandbox.store?subject=Claim listing: ${encodeURIComponent(listing.title)}&body=Hi, I'd like to claim the VibeSandbox listing for ${encodeURIComponent(listing.title)}.`}
+                    style={{
+                      display: 'inline-block', padding: '10px 24px',
+                      background: 'var(--ink)', color: 'var(--accent)',
+                      border: '2px solid var(--ink)', borderRadius: 4,
+                      fontWeight: 700, fontSize: 14, textDecoration: 'none',
+                      boxShadow: '3px 3px 0px oklch(0.3 0.04 128)',
+                    }}
+                  >
+                    Claim this listing →
+                  </a>
+                </div>
+              </>
+            ) : listing.score !== null && c ? (
               <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 28 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                   <div style={{ fontSize: 48, fontWeight: 800, color: c.text, fontFamily: "'DM Mono', monospace", letterSpacing: '-0.04em', lineHeight: 1 }}>
@@ -190,28 +246,32 @@ export default async function ListingPage({ params }: { params: { id: string } }
               <ListingMetadataDisplay metadata={listing.listing_metadata as ListingMetadata} />
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, borderTop: '1px solid var(--border)', marginBottom: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Avatar initials={listing.avatar} size={40} />
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>{listing.creator}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text3)' }}>{isOwner ? 'Your listing' : 'Seller'}</div>
-                </div>
-              </div>
-              {!isOwner && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
-                    {price.label}
+            {listing.status !== 'not_for_sale' && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, borderTop: '1px solid var(--border)', marginBottom: 28 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar initials={listing.avatar} size={40} />
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600 }}>{listing.creator}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text3)' }}>{isOwner ? 'Your listing' : 'Seller'}</div>
+                    </div>
                   </div>
-                  {price.sub && <div style={{ fontSize: 12, color: 'var(--text3)' }}>{price.sub}</div>}
+                  {!isOwner && (
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
+                        {price.label}
+                      </div>
+                      {price.sub && <div style={{ fontSize: 12, color: 'var(--text3)' }}>{price.sub}</div>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {isOwner
-              ? <ListingOwnerActions listing={listing} />
-              : <ListingContactForm listing={listing} />
-            }
+                {isOwner
+                  ? <ListingOwnerActions listing={listing} />
+                  : <ListingContactForm listing={listing} />
+                }
+              </>
+            )}
           </div>
         </div>
       </div>
