@@ -271,7 +271,9 @@ export default function FeedClient({ initialListings }: Props) {
             </div>
             <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 } as React.CSSProperties}>
               {notForSale.map((l, i) => (
-                <ListingCard key={l.id} listing={l} showBreakdown={showBreakdown} index={i} />
+                <div key={l.id} style={{ minWidth: 260, maxWidth: 300, flex: '0 0 auto' }}>
+                  <ListingCard listing={l} showBreakdown={showBreakdown} index={i} />
+                </div>
               ))}
             </div>
           </div>

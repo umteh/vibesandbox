@@ -98,6 +98,10 @@ interface DraftResult {
   body: string;
   marketplaceDescription: string;
   buyerCritique: string;
+  valuationLow: string;
+  valuationHigh: string;
+  valuationLabel: string;
+  valuationReasons: string[];
 }
 
 async function draftContent(app: AppDetail, genai: GoogleGenerativeAI): Promise<DraftResult> {
@@ -123,13 +127,21 @@ Output ONLY valid JSON:
 {
   "personalizedOpener": "...",
   "marketplaceDescription": "...",
-  "buyerCritique": "..."
+  "buyerCritique": "...",
+  "valuationLow": "...",
+  "valuationHigh": "...",
+  "valuationLabel": "...",
+  "valuationReasons": ["...", "...", "..."]
 }
 
 Rules:
 - personalizedOpener: 1-2 sentences. A genuine, specific observation about what this app does or who it helps. Must reference something concrete from the description. Do NOT use generic praise. Do NOT mention VibeSandbox. Tone: casual, human, one founder noticing another's work.
 - marketplaceDescription: 2-3 sentences from a buyer's perspective — what the app does, who its users are, and why it has real value as an acquisition.
-- buyerCritique: 3-4 sentences on what makes this app attractive to buy — focus on what's working (distribution, loyal users, niche, revenue signal). Do NOT mention weaknesses. Write as if you're a deal scout excited about this find.`
+- buyerCritique: 3-4 sentences on what makes this app attractive to buy — focus on what's working (distribution, loyal users, niche, revenue signal). Do NOT mention weaknesses. Write as if you're a deal scout excited about this find.
+- valuationLow: conservative acquisition value estimate as a short string like "$80K" or "$1.2M". Base on install count, rating, and revenue signals. Use 1-2 significant figures.
+- valuationHigh: optimistic acquisition value, 2-4x the low estimate. Same format.
+- valuationLabel: one of "Strong buy", "Good estimate", "Speculative" — based on how clear the revenue model and user retention signals are.
+- valuationReasons: exactly 3 strings, each 1-2 sentences. Each reason must cite a specific data point from the app (install count, rating, revenue signal, niche, etc.) that justifies the valuation range. Be concrete — no generic statements.`
   );
 
   try {
@@ -137,17 +149,21 @@ Rules:
       personalizedOpener?: string;
       marketplaceDescription?: string;
       buyerCritique?: string;
+      valuationLow?: string;
+      valuationHigh?: string;
+      valuationLabel?: string;
+      valuationReasons?: string[];
     };
-
-    const marketplaceDescription = (parsed.marketplaceDescription ?? '').trim();
-    const buyerCritique          = (parsed.buyerCritique ?? '').trim();
-    const personalizedOpener     = (parsed.personalizedOpener ?? '').trim();
 
     return {
       subject:                `We listed ${title} on VibeSandbox — see what buyers think`,
-      body:                   personalizedOpener,
-      marketplaceDescription,
-      buyerCritique,
+      body:                   (parsed.personalizedOpener ?? '').trim(),
+      marketplaceDescription: (parsed.marketplaceDescription ?? '').trim(),
+      buyerCritique:          (parsed.buyerCritique ?? '').trim(),
+      valuationLow:           (parsed.valuationLow ?? '').trim(),
+      valuationHigh:          (parsed.valuationHigh ?? '').trim(),
+      valuationLabel:         (parsed.valuationLabel ?? '').trim(),
+      valuationReasons:       Array.isArray(parsed.valuationReasons) ? parsed.valuationReasons.map(r => String(r).trim()) : [],
     };
   } catch {
     return {
@@ -155,6 +171,10 @@ Rules:
       body:                   '',
       marketplaceDescription: '',
       buyerCritique:          '',
+      valuationLow:           '',
+      valuationHigh:          '',
+      valuationLabel:         '',
+      valuationReasons:       [],
     };
   }
 }
@@ -248,10 +268,11 @@ export async function GET(req: NextRequest) {
   }
 
   // 2. Dedup early — skip appIds we've already processed
+  // Fetch all seen IDs from the table (avoids URL-length limits from passing 600+ IDs to .in())
   const { data: seen } = await admin
     .from('outreach_targets')
     .select('app_id')
-    .in('app_id', listItems.map(i => i.appId));
+    .eq('source', 'google_play');
   const seenSet = new Set((seen ?? []).map((r: { app_id: string }) => r.app_id));
   // Take top MAX_TO_DETAIL by score — fetching all 250+ would exceed 60s timeout
   const unseen = listItems.filter(i => !seenSet.has(i.appId)).slice(0, MAX_TO_DETAIL);
@@ -278,6 +299,7 @@ export async function GET(req: NextRequest) {
   if (targets.length === 0) {
     await Promise.allSettled(details.map(app =>
       admin.from('outreach_targets').upsert({
+        source:   'google_play',
         app_id:   String(app.appId ?? ''),
         app_name: String(app.title ?? ''),
         status:   'skipped',
@@ -350,7 +372,14 @@ export async function GET(req: NextRequest) {
               creator_name:       devName,
               creator_initials:   initials,
               tags:               [],
-              listing_metadata:   {},
+              listing_metadata:   draft.valuationLow ? {
+                valuation: {
+                  low:     draft.valuationLow,
+                  high:    draft.valuationHigh,
+                  label:   draft.valuationLabel,
+                  reasons: draft.valuationReasons,
+                },
+              } : {},
               // user_id intentionally null — unclaimed
             })
             .select('id')
@@ -386,7 +415,8 @@ export async function GET(req: NextRequest) {
       const status = error ? 'failed' : 'sent';
       if (error) console.error(`[play-outreach] send failed to ${devEmail}:`, error);
 
-      await admin.from('outreach_targets').upsert({
+      const { error: upsertErr } = await admin.from('outreach_targets').upsert({
+        source:          'google_play',
         app_id:          appId,
         app_name:        String(app.title ?? ''),
         developer_email: devEmail,
@@ -396,6 +426,7 @@ export async function GET(req: NextRequest) {
         drafted_message: draft.body,
         status,
       }, { onConflict: 'source,app_id' });
+      if (upsertErr) console.error(`[play-outreach] outreach_targets upsert failed for ${appId}:`, upsertErr);
 
       return { app, draft, listingId, sent: !error };
     })
