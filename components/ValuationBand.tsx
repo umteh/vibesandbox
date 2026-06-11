@@ -1,6 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+const PLACEHOLDERS = [
+  'yourapp.com',
+  'apps.apple.com/app/your-app/id123456789',
+  'play.google.com/store/apps/details?id=com.yourapp',
+];
+
+function useTypewriter() {
+  const [display, setDisplay] = useState('');
+  const [label, setLabel]     = useState('Website URL');
+  const labels = ['Website URL', 'App Store URL', 'Play Store URL'];
+  const idx    = useRef(0);
+  const pos    = useRef(0);
+  const dir    = useRef<'typing' | 'deleting'>('typing');
+  const timer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    function tick() {
+      const phrase = PLACEHOLDERS[idx.current];
+      if (dir.current === 'typing') {
+        pos.current += 1;
+        setDisplay(phrase.slice(0, pos.current));
+        setLabel(labels[idx.current]);
+        if (pos.current === phrase.length) {
+          dir.current = 'deleting';
+          timer.current = setTimeout(tick, 1800);
+        } else {
+          timer.current = setTimeout(tick, 55);
+        }
+      } else {
+        pos.current -= 1;
+        setDisplay(phrase.slice(0, pos.current));
+        if (pos.current === 0) {
+          idx.current  = (idx.current + 1) % PLACEHOLDERS.length;
+          dir.current  = 'typing';
+          timer.current = setTimeout(tick, 400);
+        } else {
+          timer.current = setTimeout(tick, 28);
+        }
+      }
+    }
+    timer.current = setTimeout(tick, 600);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { display, label };
+}
 
 type Platform = 'web' | 'ios' | 'android' | 'cross-platform';
 type BandState = 'idle' | 'loading' | 'result' | 'error';
@@ -40,6 +88,7 @@ const CONFIDENCE_LABELS: Record<Confidence, string> = {
 };
 
 export default function ValuationBand({ onListThisApp }: Props) {
+  const { display: typedPlaceholder, label: placeholderLabel } = useTypewriter();
   const [url, setUrl] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
@@ -196,20 +245,20 @@ export default function ValuationBand({ onListThisApp }: Props) {
         ) : (
           /* ── Idle / Error state ── */
           <div>
-            <div style={{ display: 'flex', gap: 0 }}>
+            <div className="vb-row">
               <div style={{ position: 'relative', flex: 1 }}>
                 <input
                   type="text"
-                  placeholder="myapp.com  or  App Store / Play Store URL"
+                  placeholder=""
                   value={url}
                   onChange={e => setUrl(e.target.value)}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => { setInputFocused(false); handleUrlBlur(); }}
                   onKeyDown={e => e.key === 'Enter' && estimate()}
+                  className="vb-input"
                   style={{
                     width: '100%', padding: '11px 14px',
                     border: '2px solid var(--ink)',
-                    borderRight: 'none',
                     borderRadius: 0, fontSize: 13,
                     outline: 'none', background: '#fff',
                     color: 'var(--ink)',
@@ -217,19 +266,28 @@ export default function ValuationBand({ onListThisApp }: Props) {
                   }}
                 />
                 {!url && !inputFocused && (
-                  <span style={{
-                    position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                    display: 'inline-block', width: '2px', height: '1.1em',
-                    background: 'var(--ink)', pointerEvents: 'none',
-                    animation: 'blink 1s step-start infinite',
-                  }} />
+                  <div style={{
+                    position: 'absolute', left: 14, top: 0, bottom: 0,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    pointerEvents: 'none',
+                  }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                      {placeholderLabel}
+                    </span>
+                    <span style={{ width: 1, height: '60%', background: 'var(--border2)' }} />
+                    <span style={{ fontSize: 13, color: 'var(--text3)', fontFamily: "'DM Mono', monospace" }}>
+                      {typedPlaceholder}
+                      <span style={{ display: 'inline-block', width: '2px', height: '1em', background: 'var(--ink)', marginLeft: 1, verticalAlign: 'text-bottom', animation: 'blink 1s step-start infinite' }} />
+                    </span>
+                  </div>
                 )}
               </div>
               <button
                 onClick={estimate}
                 disabled={!url.trim()}
+                className="vb-btn"
                 style={{
-                  padding: '11px 20px', background: 'var(--ink)', color: 'var(--accent)',
+                  background: 'var(--ink)', color: 'var(--accent)',
                   border: '2px solid var(--ink)', fontSize: 12, fontWeight: 800,
                   cursor: url.trim() ? 'pointer' : 'default',
                   opacity: url.trim() ? 1 : 0.5,
@@ -297,6 +355,14 @@ export default function ValuationBand({ onListThisApp }: Props) {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        .vb-row { display: flex; gap: 0; }
+        .vb-input { border-right: none !important; }
+        .vb-btn { padding: 11px 20px; }
+        @media (max-width: 480px) {
+          .vb-row { flex-direction: column; }
+          .vb-input { border-right: 2px solid var(--ink) !important; border-bottom: none !important; }
+          .vb-btn { padding: 11px 20px; width: 100%; text-align: center; }
+        }
       `}</style>
     </div>
   );

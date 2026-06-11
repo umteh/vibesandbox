@@ -98,7 +98,14 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ background: '#fff', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
-          <AppScreenPlaceholder title={listing.title} category={listing.category} size="lg" screenshotUrl={listing.screenshotUrl} />
+          <AppScreenPlaceholder
+            title={listing.title}
+            category={listing.category}
+            size="lg"
+            screenshotUrl={listing.screenshotUrl}
+            screenshots={(listing.listing_metadata as { screenshots?: string[] } | null)?.screenshots}
+            platform={listing.platform}
+          />
 
           <div style={{ padding: 32 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>

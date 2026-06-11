@@ -372,14 +372,17 @@ export async function GET(req: NextRequest) {
               creator_name:       devName,
               creator_initials:   initials,
               tags:               [],
-              listing_metadata:   draft.valuationLow ? {
-                valuation: {
-                  low:     draft.valuationLow,
-                  high:    draft.valuationHigh,
-                  label:   draft.valuationLabel,
-                  reasons: draft.valuationReasons,
-                },
-              } : {},
+              listing_metadata:   {
+                ...(draft.valuationLow ? {
+                  valuation: {
+                    low:     draft.valuationLow,
+                    high:    draft.valuationHigh,
+                    label:   draft.valuationLabel,
+                    reasons: draft.valuationReasons,
+                  },
+                } : {}),
+                screenshots: ((app.screenshots as string[] | undefined) ?? []).slice(0, 5),
+              },
               // user_id intentionally null — unclaimed
             })
             .select('id')

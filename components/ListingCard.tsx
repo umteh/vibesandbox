@@ -34,6 +34,7 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
         transform: hovered ? 'translate(-2px, -2px)' : 'none',
         transition: 'transform 0.12s ease, box-shadow 0.12s ease',
         animation: `cardEnter 0.4s ease ${enterDelay} both`,
+        height: '100%',
       }}
     >
       <AppScreenPlaceholder
@@ -64,20 +65,26 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
           {listing.tagline}
         </p>
 
-        {showBreakdown && listing.status === 'not_for_sale' && (
-          <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
-            {DIMENSIONS_ORDERED.map(k => (
-              <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }} title="Score unlocked when claimed">
-                <div style={{ width: '100%', height: 5, background: 'var(--border)', overflow: 'hidden', border: '1px solid var(--border2)' }}>
-                  <div style={{ width: '55%', height: '100%', background: 'var(--border2)' }} />
-                </div>
-                <span style={{ fontSize: 9, color: 'var(--border2)', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-                  {DIMENSION_LABELS[k]}
+        {listing.status === 'not_for_sale' && (() => {
+          const val = (listing.listing_metadata as { valuation?: { low: string; high: string; label: string } } | null)?.valuation;
+          if (!val?.low) return null;
+          const labelColor = val.label === 'Strong buy' ? 'var(--green)' : val.label === 'Speculative' ? 'var(--amber)' : 'var(--blue)';
+          return (
+            <div style={{ marginBottom: 12, padding: '10px 12px', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: 6 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>
+                Est. acquisition value
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>
+                  {val.low} – {val.high}
+                </span>
+                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', border: `1.5px solid ${labelColor}`, borderRadius: 3, color: labelColor, whiteSpace: 'nowrap' }}>
+                  {val.label}
                 </span>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {showBreakdown && listing.breakdown && listing.status !== 'not_for_sale' && (
           <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>

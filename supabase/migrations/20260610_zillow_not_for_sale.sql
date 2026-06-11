@@ -45,6 +45,10 @@ CREATE TABLE IF NOT EXISTS outreach_targets (
   UNIQUE (source, app_id)
 );
 
+-- T5: Unique constraint on source_app_id to prevent duplicate auto-created listings
+ALTER TABLE listings
+  ADD CONSTRAINT listings_source_app_id_unique UNIQUE (source_app_id);
+
 -- After applying: verify with
 -- SELECT id, title, status, source_app_id FROM listings WHERE status = 'not_for_sale' LIMIT 5;
 -- SELECT source, app_id, app_name, status FROM outreach_targets LIMIT 10;

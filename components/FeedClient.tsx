@@ -262,19 +262,42 @@ export default function FeedClient({ initialListings }: Props) {
         <div style={{ borderBottom: '2px solid var(--border2)', background: 'var(--bg)' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <a href="/radar" style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em', textDecoration: 'none' }}>
                 On the radar
-              </span>
+              </a>
               <span style={{ fontSize: 11, padding: '2px 8px', border: '1.5px solid var(--border2)', borderRadius: 4, color: 'var(--text3)', background: 'var(--bg)' }}>
                 {notForSale.length}
               </span>
+              <a href="/radar" style={{ fontSize: 11, color: 'var(--text3)', textDecoration: 'none', marginLeft: 'auto', opacity: 0.7 }}>
+                See all →
+              </a>
             </div>
-            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 } as React.CSSProperties}>
-              {notForSale.map((l, i) => (
-                <div key={l.id} style={{ minWidth: 260, maxWidth: 300, flex: '0 0 auto' }}>
+            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4, alignItems: 'stretch' } as React.CSSProperties}>
+              {notForSale.slice(0, 7).map((l, i) => (
+                <div key={l.id} style={{ minWidth: 260, maxWidth: 300, flex: '0 0 auto', display: 'flex', flexDirection: 'column' }}>
                   <ListingCard listing={l} showBreakdown={showBreakdown} index={i} />
                 </div>
               ))}
+              {notForSale.length > 7 && (
+                <a href="/radar" style={{ minWidth: 160, flex: '0 0 auto', textDecoration: 'none' }}>
+                  <div style={{
+                    height: '100%', minHeight: 200,
+                    border: '2px dashed var(--border2)', borderRadius: 'var(--radius)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 10, cursor: 'pointer', color: 'var(--text3)',
+                    transition: 'border-color 0.12s, color 0.12s',
+                  }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--ink)'; (e.currentTarget as HTMLDivElement).style.color = 'var(--text)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border2)'; (e.currentTarget as HTMLDivElement).style.color = 'var(--text3)'; }}
+                  >
+                    <span style={{ fontSize: 24 }}>📡</span>
+                    <div style={{ textAlign: 'center', padding: '0 16px' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>+{notForSale.length - 7} more</div>
+                      <div style={{ fontSize: 11 }}>See all →</div>
+                    </div>
+                  </div>
+                </a>
+              )}
             </div>
           </div>
         </div>
