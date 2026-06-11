@@ -10,8 +10,8 @@ const PLACEHOLDERS = [
 
 function useTypewriter() {
   const [display, setDisplay] = useState('');
-  const [label, setLabel]     = useState('Website URL');
-  const labels = ['Website URL', 'App Store URL', 'Play Store URL'];
+  const [label, setLabel]     = useState('Website');
+  const labels = ['Website', 'App Store', 'Play Store'];
   const idx    = useRef(0);
   const pos    = useRef(0);
   const dir    = useRef<'typing' | 'deleting'>('typing');
@@ -267,9 +267,9 @@ export default function ValuationBand({ onListThisApp }: Props) {
                 />
                 {!url && !inputFocused && (
                   <div style={{
-                    position: 'absolute', left: 14, top: 0, bottom: 0,
+                    position: 'absolute', left: 14, right: 0, top: 0, bottom: 0,
                     display: 'flex', alignItems: 'center', gap: 8,
-                    pointerEvents: 'none',
+                    pointerEvents: 'none', overflow: 'hidden',
                   }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                       {placeholderLabel}
