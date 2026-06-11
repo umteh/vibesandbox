@@ -105,7 +105,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                   <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em' }}>{listing.title}</h1>
-                  <ScoreBadge score={listing.score} size="lg" />
+                  {listing.status !== 'not_for_sale' && <ScoreBadge score={listing.score} size="lg" />}
                 </div>
                 <a href={`https://${listing.url}`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontFamily: "'DM Mono', monospace" }}>

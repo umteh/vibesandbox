@@ -54,7 +54,7 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
               )}
             </div>
           </div>
-          <ScoreBadge score={listing.score} />
+          {listing.status !== 'not_for_sale' && <ScoreBadge score={listing.score} />}
         </div>
 
         <p style={{
@@ -107,7 +107,7 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Avatar initials={listing.avatar} size={22} />
-            <span style={{ fontSize: 12, color: 'var(--text2)' }}>{listing.creator}</span>
+            <span style={{ fontSize: 12, color: 'var(--text2)', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{listing.creator}</span>
             <span style={{ fontSize: 11, color: 'var(--text3)' }}>· {listing.createdAt}</span>
           </div>
           {listing.status === 'not_for_sale' ? (

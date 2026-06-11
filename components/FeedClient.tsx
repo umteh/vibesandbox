@@ -263,7 +263,7 @@ export default function FeedClient({ initialListings }: Props) {
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Coming to market
+                On the radar
               </span>
               <span style={{ fontSize: 11, padding: '2px 8px', border: '1.5px solid var(--border2)', borderRadius: 4, color: 'var(--text3)', background: 'var(--bg)' }}>
                 {notForSale.length}
