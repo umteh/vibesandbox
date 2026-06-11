@@ -135,7 +135,15 @@ export default function FeedClient({ initialListings }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const notForSale = listings.filter(l => {
+    if (l.status !== 'not_for_sale') return false;
+    if (category !== 'All' && l.category !== category) return false;
+    if (search && !`${l.title} ${l.tagline} ${l.tags.join(' ')}`.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
   let filtered = listings.filter(l => {
+    if (l.status === 'not_for_sale') return false;
     if (category !== 'All' && l.category !== category) return false;
     if (search && !`${l.title} ${l.tagline} ${l.tags.join(' ')}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -248,6 +256,29 @@ export default function FeedClient({ initialListings }: Props) {
         </div>
         </div>
       </div>
+
+      {/* Not-for-sale strip */}
+      {notForSale.length > 0 && (
+        <div style={{ borderBottom: '2px solid var(--border2)', background: 'var(--bg)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                On the radar
+              </span>
+              <span style={{ fontSize: 11, padding: '2px 8px', border: '1.5px solid var(--border2)', borderRadius: 4, color: 'var(--text3)', background: 'var(--bg)' }}>
+                {notForSale.length}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 } as React.CSSProperties}>
+              {notForSale.map((l, i) => (
+                <div key={l.id} style={{ minWidth: 260, maxWidth: 300, flex: '0 0 auto' }}>
+                  <ListingCard listing={l} showBreakdown={showBreakdown} index={i} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Feed */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 64px' }}>

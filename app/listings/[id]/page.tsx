@@ -9,6 +9,7 @@ import AppScreenPlaceholder from '@/components/AppScreenPlaceholder';
 import ListingContactForm from '@/components/ListingContactForm';
 import HighlightedCritique from '@/components/HighlightedCritique';
 import ListingOwnerActions from '@/components/ListingOwnerActions';
+import ClaimButton from '@/components/ClaimButton';
 import ListingMetadataDisplay from '@/components/ListingMetadataDisplay';
 import type { ListingMetadata } from '@/lib/metadata';
 
@@ -104,7 +105,7 @@ export default async function ListingPage({ params }: { params: { id: string } }
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                   <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em' }}>{listing.title}</h1>
-                  <ScoreBadge score={listing.score} size="lg" />
+                  {listing.status !== 'not_for_sale' && <ScoreBadge score={listing.score} size="lg" />}
                 </div>
                 <a href={`https://${listing.url}`} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: 13, color: 'var(--blue)', textDecoration: 'none', fontFamily: "'DM Mono', monospace" }}>
@@ -123,7 +124,60 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
             <p style={{ fontSize: 16, color: 'var(--text)', lineHeight: 1.7, marginBottom: 28 }}>{listing.tagline}</p>
 
-            {listing.score !== null && c ? (
+            {listing.status === 'not_for_sale' ? (
+              <>
+                {/* Valuation estimate */}
+                {(() => {
+                  const val = (listing.listing_metadata as { valuation?: { low: string; high: string; label: string; reasons: string[] } } | null)?.valuation;
+                  if (!val?.low) return null;
+                  const labelColor = val.label === 'Strong buy' ? 'var(--green)' : val.label === 'Speculative' ? 'var(--amber)' : 'var(--blue)';
+                  const labelBg    = val.label === 'Strong buy' ? 'oklch(0.95 0.06 145)' : val.label === 'Speculative' ? 'oklch(0.97 0.05 80)' : 'oklch(0.95 0.04 240)';
+                  return (
+                    <div style={{ border: '2px solid var(--ink)', borderRadius: 12, padding: 28, marginBottom: 28, background: '#fff' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                        Estimated acquisition value
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20, flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--text)', fontFamily: "'DM Mono', monospace", lineHeight: 1 }}>
+                          {val.low} – {val.high}
+                        </div>
+                        <span style={{
+                          fontSize: 12, fontWeight: 700, padding: '4px 10px',
+                          border: `2px solid ${labelColor}`, borderRadius: 4,
+                          color: labelColor, background: labelBg,
+                        }}>
+                          {val.label}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {val.reasons.map((r, i) => (
+                          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <span style={{ color: 'var(--text3)', flexShrink: 0, marginTop: 2, fontSize: 14 }}>→</span>
+                            <span style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.55 }}>{r}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text3)' }}>
+                        Full score breakdown + detailed analysis unlocked when you claim this listing.
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Buyer critique fallback when no valuation */}
+                {!((listing.listing_metadata as { valuation?: unknown } | null)?.valuation) && listing.critique && (
+                  <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 28 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                      What buyers love about this app
+                    </div>
+                    <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>{listing.critique}</p>
+                  </div>
+                )}
+
+                {/* Claim CTA */}
+                <ClaimButton listingId={params.id} listingTitle={listing.title} />
+              </>
+            ) : listing.score !== null && c ? (
               <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 28 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                   <div style={{ fontSize: 48, fontWeight: 800, color: c.text, fontFamily: "'DM Mono', monospace", letterSpacing: '-0.04em', lineHeight: 1 }}>
@@ -190,28 +244,32 @@ export default async function ListingPage({ params }: { params: { id: string } }
               <ListingMetadataDisplay metadata={listing.listing_metadata as ListingMetadata} />
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, borderTop: '1px solid var(--border)', marginBottom: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Avatar initials={listing.avatar} size={40} />
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>{listing.creator}</div>
-                  <div style={{ fontSize: 13, color: 'var(--text3)' }}>{isOwner ? 'Your listing' : 'Seller'}</div>
-                </div>
-              </div>
-              {!isOwner && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
-                    {price.label}
+            {listing.status !== 'not_for_sale' && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, borderTop: '1px solid var(--border)', marginBottom: 28 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Avatar initials={listing.avatar} size={40} />
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 600 }}>{listing.creator}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text3)' }}>{isOwner ? 'Your listing' : 'Seller'}</div>
+                    </div>
                   </div>
-                  {price.sub && <div style={{ fontSize: 12, color: 'var(--text3)' }}>{price.sub}</div>}
+                  {!isOwner && (
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
+                        {price.label}
+                      </div>
+                      {price.sub && <div style={{ fontSize: 12, color: 'var(--text3)' }}>{price.sub}</div>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {isOwner
-              ? <ListingOwnerActions listing={listing} />
-              : <ListingContactForm listing={listing} />
-            }
+                {isOwner
+                  ? <ListingOwnerActions listing={listing} />
+                  : <ListingContactForm listing={listing} />
+                }
+              </>
+            )}
           </div>
         </div>
       </div>

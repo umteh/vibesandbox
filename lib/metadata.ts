@@ -1,4 +1,12 @@
+export interface ValuationData {
+  low: string;      // e.g. "$120K"
+  high: string;     // e.g. "$380K"
+  label: string;    // e.g. "Good estimate"
+  reasons: string[];
+}
+
 export interface ListingMetadata {
+  valuation?: ValuationData;
   pitch?: {
     hook?: string;         // 140 char value prop
     secret_sauce?: string; // AI moat description

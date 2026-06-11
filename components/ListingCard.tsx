@@ -54,7 +54,7 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
               )}
             </div>
           </div>
-          <ScoreBadge score={listing.score} />
+          {listing.status !== 'not_for_sale' && <ScoreBadge score={listing.score} />}
         </div>
 
         <p style={{
@@ -64,7 +64,22 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
           {listing.tagline}
         </p>
 
-        {showBreakdown && listing.breakdown && (
+        {showBreakdown && listing.status === 'not_for_sale' && (
+          <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
+            {DIMENSIONS_ORDERED.map(k => (
+              <div key={k} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }} title="Score unlocked when claimed">
+                <div style={{ width: '100%', height: 5, background: 'var(--border)', overflow: 'hidden', border: '1px solid var(--border2)' }}>
+                  <div style={{ width: '55%', height: '100%', background: 'var(--border2)' }} />
+                </div>
+                <span style={{ fontSize: 9, color: 'var(--border2)', fontWeight: 700, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  {DIMENSION_LABELS[k]}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showBreakdown && listing.breakdown && listing.status !== 'not_for_sale' && (
           <div style={{ marginBottom: 12, display: 'flex', gap: 5 }}>
             {DIMENSIONS_ORDERED.map((k, bi) => {
               const v = (listing.breakdown as unknown as Record<string, number>)[k] ?? 0;
@@ -92,15 +107,26 @@ export default function ListingCard({ listing, showBreakdown = true, index = 0 }
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Avatar initials={listing.avatar} size={22} />
-            <span style={{ fontSize: 12, color: 'var(--text2)' }}>{listing.creator}</span>
+            <span style={{ fontSize: 12, color: 'var(--text2)', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{listing.creator}</span>
             <span style={{ fontSize: 11, color: 'var(--text3)' }}>· {listing.createdAt}</span>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
-              {price.label}
+          {listing.status === 'not_for_sale' ? (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '3px 8px',
+              border: '2px solid var(--border2)', borderRadius: 4,
+              color: 'var(--text3)', background: 'var(--bg)',
+              whiteSpace: 'nowrap',
+            }}>
+              Not for sale
+            </span>
+          ) : (
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: listing.priceType === 'free' ? 'var(--green)' : 'var(--text)' }}>
+                {price.label}
+              </div>
+              {price.sub && <div style={{ fontSize: 10, color: 'var(--text3)' }}>{price.sub}</div>}
             </div>
-            {price.sub && <div style={{ fontSize: 10, color: 'var(--text3)' }}>{price.sub}</div>}
-          </div>
+          )}
         </div>
       </div>
     </div>
