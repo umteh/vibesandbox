@@ -133,7 +133,7 @@ export default function ValuationBand({ onListThisApp }: Props) {
       }
       if (res.status === 422) {
         setState('error');
-        setErrorMsg("Couldn't fetch app data — check the URL and try again.");
+        setErrorMsg("Hmm, we couldn't pull data from that link. Is the URL correct?");
         return;
       }
       if (!res.ok) {
@@ -172,9 +172,6 @@ export default function ValuationBand({ onListThisApp }: Props) {
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--ink)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             What&apos;s your app worth?
-          </span>
-          <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-            Paste a URL — get a 30-second valuation
           </span>
         </div>
 
@@ -355,12 +352,11 @@ export default function ValuationBand({ onListThisApp }: Props) {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        .vb-row { display: flex; gap: 0; }
-        .vb-input { border-right: none !important; }
+        .vb-row { display: flex; gap: 8px; }
+        .vb-input { border-right: 2px solid var(--ink) !important; }
         .vb-btn { padding: 11px 20px; }
         @media (max-width: 480px) {
           .vb-row { flex-direction: column; }
-          .vb-input { border-right: 2px solid var(--ink) !important; border-bottom: none !important; }
           .vb-btn { padding: 11px 20px; width: 100%; text-align: center; }
         }
       `}</style>
