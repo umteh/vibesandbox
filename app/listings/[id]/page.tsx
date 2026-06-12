@@ -11,6 +11,7 @@ import HighlightedCritique from '@/components/HighlightedCritique';
 import ListingOwnerActions from '@/components/ListingOwnerActions';
 import ClaimButton from '@/components/ClaimButton';
 import ListingMetadataDisplay from '@/components/ListingMetadataDisplay';
+import PlatformIcon from '@/components/PlatformIcon';
 import type { ListingMetadata } from '@/lib/metadata';
 
 export const revalidate = 30;
@@ -98,14 +99,26 @@ export default async function ListingPage({ params }: { params: { id: string } }
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ background: '#fff', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
-          <AppScreenPlaceholder
-            title={listing.title}
-            category={listing.category}
-            size="lg"
-            screenshotUrl={listing.screenshotUrl}
-            screenshots={(listing.listing_metadata as { screenshots?: string[] } | null)?.screenshots}
-            platform={listing.platform}
-          />
+          <div style={{ position: 'relative' }}>
+            <AppScreenPlaceholder
+              title={listing.title}
+              category={listing.category}
+              size="lg"
+              screenshotUrl={listing.screenshotUrl}
+              screenshots={(listing.listing_metadata as { screenshots?: string[] } | null)?.screenshots}
+              platform={listing.platform}
+            />
+            <div style={{
+              position: 'absolute', top: 10, right: 10,
+              width: 30, height: 30,
+              background: 'rgba(255,255,255,0.92)',
+              borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text2)',
+            }}>
+              <PlatformIcon platform={listing.platform} />
+            </div>
+          </div>
 
           <div style={{ padding: 32 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
