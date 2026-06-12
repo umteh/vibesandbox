@@ -180,7 +180,7 @@ export default function FeedClient({ initialListings }: Props) {
           <img
             src="/img/robot coding.png"
             alt="AI robot coding"
-            style={{ height: 140, width: 'auto', display: 'block', margin: '0 auto 16px' }}
+            style={{ height: 112, width: 'auto', display: 'block', margin: '0 auto 16px' }}
           />
           {/* TODO: re-enable once more listings are scored
           <div style={{
@@ -207,7 +207,7 @@ export default function FeedClient({ initialListings }: Props) {
           }}>
             Turn your hackathon project into{' '}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/cash.png" alt="cash" style={{ height: '3.3em', width: 'auto', display: 'inline-block', verticalAlign: 'middle', margin: '-10px -4px 0' }} />
+            <img src="/img/cash.png" alt="cash" style={{ height: '4.75em', width: 'auto', display: 'inline-block', verticalAlign: 'middle', margin: '-10px -4px 0' }} />
             {' '}in a few clicks
           </p>
         </div>

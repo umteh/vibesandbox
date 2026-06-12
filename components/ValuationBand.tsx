@@ -18,13 +18,16 @@ function useTypewriter() {
   const timer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const MAX = 15;
     function tick() {
       const phrase = PLACEHOLDERS[idx.current];
+      const cap = Math.min(phrase.length, MAX);
       if (dir.current === 'typing') {
         pos.current += 1;
-        setDisplay(phrase.slice(0, pos.current));
+        const text = phrase.slice(0, pos.current);
+        setDisplay(phrase.length > MAX && pos.current >= MAX ? text + '…' : text);
         setLabel(labels[idx.current]);
-        if (pos.current === phrase.length) {
+        if (pos.current >= cap) {
           dir.current = 'deleting';
           timer.current = setTimeout(tick, 1800);
         } else {
@@ -32,7 +35,8 @@ function useTypewriter() {
         }
       } else {
         pos.current -= 1;
-        setDisplay(phrase.slice(0, pos.current));
+        const text = phrase.slice(0, pos.current);
+        setDisplay(phrase.length > MAX && pos.current >= MAX ? text + '…' : text);
         if (pos.current === 0) {
           idx.current  = (idx.current + 1) % PLACEHOLDERS.length;
           dir.current  = 'typing';
