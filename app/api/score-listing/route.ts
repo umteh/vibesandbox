@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   // ── Screenshot ────────────────────────────────────────────────────────────
   const { data: listing } = await admin
     .from('listings')
-    .select('screenshot_url, screenshot_status')
+    .select('screenshot_url, screenshot_status, listing_metadata')
     .eq('id', listing_id)
     .single();
 
@@ -203,6 +203,18 @@ export async function POST(req: NextRequest) {
     .eq('id', listing_id)
     .single();
 
+  const isMobilePlatform = platform === 'ios' || platform === 'android';
+  const appStoreData = enriched && isMobilePlatform ? Object.fromEntries(
+    Object.entries({
+      price:          enriched.price,
+      inAppPurchases: enriched.inAppPurchases,
+      adSupported:    enriched.adSupported,
+      installs:       enriched.installs,
+      rating:         enriched.rating,
+      ratingCount:    enriched.ratingCount,
+    }).filter(([, v]) => v !== undefined)
+  ) : null;
+
   const updateData: Record<string, unknown> = {
     score,
     score_breakdown_json: breakdown,
@@ -210,6 +222,10 @@ export async function POST(req: NextRequest) {
     status: 'scored',
     last_rescored_at: new Date().toISOString(),
     score_version: (current?.score_version ?? 0) + 1,
+    listing_metadata: {
+      ...((listing?.listing_metadata as Record<string, unknown>) ?? {}),
+      ...(appStoreData ? { app_store: appStoreData } : {}),
+    },
   };
   if (capturedStorageUrl && !listing?.screenshot_url) {
     updateData.screenshot_url    = capturedStorageUrl;

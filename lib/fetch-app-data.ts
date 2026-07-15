@@ -17,6 +17,8 @@ export interface AppData {
   category?: string;
   developer?: string;
   installs?: string;        // Android: "1,000,000+"
+  inAppPurchases?: boolean; // Android: has IAP / subscription
+  adSupported?: boolean;    // Android: shows ads
   topReviews?: string[];    // up to 5 review texts
   // Web metadata
   metaDescription?: string;
@@ -97,14 +99,16 @@ async function fetchAndroidData(url: string): Promise<AppData> {
     }
 
     const a = app.value as unknown as Record<string, unknown>;
-    const title       = String(a.title ?? '');
-    const description = String(a.description ?? '').slice(0, 1200);
-    const rating      = Number(a.score ?? 0);
-    const ratingCount = Number(a.ratings ?? 0);
-    const price       = a.free ? 'Free' : `$${a.price}`;
-    const category    = String(a.genre ?? '');
-    const developer   = String(a.developer ?? '');
-    const installs    = String(a.installs ?? '');
+    const title          = String(a.title ?? '');
+    const description    = String(a.description ?? '').slice(0, 1200);
+    const rating         = Number(a.score ?? 0);
+    const ratingCount    = Number(a.ratings ?? 0);
+    const price          = a.free ? 'Free' : `$${a.price}`;
+    const category       = String(a.genre ?? '');
+    const developer      = String(a.developer ?? '');
+    const installs       = String(a.installs ?? '');
+    const inAppPurchases = Boolean(a.inAppPurchases ?? a.offersIAP ?? false);
+    const adSupported    = Boolean(a.adSupported ?? a.containsAds ?? false);
 
     const topReviews: string[] = [];
     if (reviewsResult.status === 'fulfilled') {
@@ -114,19 +118,25 @@ async function fetchAndroidData(url: string): Promise<AppData> {
       });
     }
 
+    const monetizationFlags = [
+      inAppPurchases ? 'in-app purchases' : '',
+      adSupported    ? 'contains ads'     : '',
+    ].filter(Boolean).join(', ');
+
     const summary = [
       `Platform: Google Play Store`,
       `Title: ${title}`,
       `Developer: ${developer}`,
       `Category: ${category}`,
       `Price: ${price}`,
+      monetizationFlags ? `Monetization: ${monetizationFlags}` : '',
       `Installs: ${installs}`,
       `Rating: ${rating.toFixed(1)}/5 (${ratingCount.toLocaleString()} ratings)`,
       `Description:\n${description}`,
       topReviews.length ? `\nTop reviews:\n${topReviews.join('\n')}` : '',
     ].filter(Boolean).join('\n');
 
-    return { platform: 'android', title, description, rating, ratingCount, price, category, developer, installs, topReviews, summary };
+    return { platform: 'android', title, description, rating, ratingCount, price, category, developer, installs, topReviews, inAppPurchases, adSupported, summary };
   } catch (err) {
     return { platform: 'android', summary: `(Play Store fetch error: ${err})` };
   }

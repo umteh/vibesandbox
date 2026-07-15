@@ -382,6 +382,14 @@ export async function GET(req: NextRequest) {
                   },
                 } : {}),
                 screenshots: ((app.screenshots as string[] | undefined) ?? []).slice(0, 5),
+                app_store: {
+                  price:          app.free ? 'Free' : `$${app.price}`,
+                  inAppPurchases: Boolean(app.inAppPurchases ?? app.offersIAP ?? false),
+                  adSupported:    Boolean(app.adSupported ?? app.containsAds ?? false),
+                  installs:       String(app.installs ?? ''),
+                  rating:         Number(app.score ?? 0),
+                  ratingCount:    Number(app.ratings ?? 0),
+                },
               },
               // user_id intentionally null — unclaimed
             })

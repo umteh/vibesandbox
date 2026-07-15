@@ -12,7 +12,8 @@ import ListingOwnerActions from '@/components/ListingOwnerActions';
 import ClaimButton from '@/components/ClaimButton';
 import ListingMetadataDisplay from '@/components/ListingMetadataDisplay';
 import PlatformIcon from '@/components/PlatformIcon';
-import type { ListingMetadata } from '@/lib/metadata';
+import type { ListingMetadata, AppStoreData } from '@/lib/metadata';
+import { inferBusinessModel } from '@/lib/metadata';
 
 export const revalidate = 30;
 
@@ -259,6 +260,49 @@ export default async function ListingPage({ params }: { params: { id: string } }
                 </button>
               </div>
             )}
+
+            {(() => {
+              const appStore = (listing.listing_metadata as ListingMetadata | null)?.app_store;
+              if (!appStore) return null;
+              const model = inferBusinessModel(appStore);
+              const modelStyle: Record<string, { color: string; bg: string }> = {
+                'Paid':         { color: 'var(--blue)',  bg: 'var(--blue-light)' },
+                'Freemium':     { color: 'var(--green)', bg: 'oklch(0.95 0.06 145)' },
+                'Ad-supported': { color: 'var(--amber)', bg: 'var(--amber-light)' },
+                'Ads + IAP':    { color: 'var(--amber)', bg: 'var(--amber-light)' },
+                'Free':         { color: 'var(--text3)', bg: 'var(--bg2)' },
+              };
+              const ms = modelStyle[model] ?? modelStyle['Free'];
+              const signals: { label: string; value: string }[] = [];
+              if (appStore.price)      signals.push({ label: 'Price', value: appStore.price });
+              if (appStore.inAppPurchases !== undefined) signals.push({ label: 'IAP', value: appStore.inAppPurchases ? 'Yes' : 'No' });
+              if (appStore.adSupported  !== undefined) signals.push({ label: 'Ads', value: appStore.adSupported  ? 'Yes' : 'No' });
+              if (appStore.installs)   signals.push({ label: 'Installs', value: appStore.installs });
+              if (appStore.rating)     signals.push({ label: 'Rating', value: `${appStore.rating.toFixed(1)} ★${appStore.ratingCount ? ` (${appStore.ratingCount.toLocaleString()})` : ''}` });
+              return (
+                <div style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 24 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+                    Business Model
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <span style={{
+                      fontSize: 13, fontWeight: 700, padding: '4px 10px',
+                      border: `1.5px solid ${ms.color}`, borderRadius: 4,
+                      color: ms.color, background: ms.bg, flexShrink: 0,
+                    }}>
+                      {model}
+                    </span>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {signals.map(s => (
+                        <span key={s.label} style={{ fontSize: 12, color: 'var(--text2)', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 4, padding: '3px 8px' }}>
+                          <span style={{ color: 'var(--text3)' }}>{s.label}:</span> {s.value}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {listing.listing_metadata && Object.keys(listing.listing_metadata).length > 0 && (
               <ListingMetadataDisplay metadata={listing.listing_metadata as ListingMetadata} />

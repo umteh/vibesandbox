@@ -5,8 +5,27 @@ export interface ValuationData {
   reasons: string[];
 }
 
+export interface AppStoreData {
+  price?: string;
+  inAppPurchases?: boolean;
+  adSupported?: boolean;
+  installs?: string;
+  rating?: number;
+  ratingCount?: number;
+}
+
+export function inferBusinessModel(d: AppStoreData): string {
+  const isFree = !d.price || d.price === 'Free' || d.price === '$0.00';
+  if (!isFree) return 'Paid';
+  if (d.inAppPurchases && d.adSupported) return 'Ads + IAP';
+  if (d.inAppPurchases) return 'Freemium';
+  if (d.adSupported) return 'Ad-supported';
+  return 'Free';
+}
+
 export interface ListingMetadata {
   valuation?: ValuationData;
+  app_store?: AppStoreData;
   pitch?: {
     hook?: string;         // 140 char value prop
     secret_sauce?: string; // AI moat description
